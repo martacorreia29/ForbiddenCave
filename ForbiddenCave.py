@@ -1207,7 +1207,7 @@ class ForbiddenCave:
                    if event.type == QUIT:
                        return self.GAMESTATE_QUIT
                    if event.type == KEYDOWN:
-                       if event.key == K_SPACE or K_UP: # up
+                       if event.key == K_SPACE or event.key == K_UP: # up
                            if (player.jump == 0 and player.ymove == 0) \
                                 or player.doElevator == True:
                             self.jumpSound.play()
