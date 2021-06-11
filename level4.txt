@@ -1,0 +1,16 @@
+bbbbbbbbbbbbbbbbbbbbbbbbbb
+b..c.....................b
+b................c.......b
+b..aa.a.aa.............f.d
+b..m.c....ooOoo.aaa..laaab
+b..aaaaaal...........l...b
+b........l......laaaaaa..b
+b........l...f..l........b
+b....cm..aaaaaaaa..cm....b
+b..alaaa..........aalaa..b
+b..cl...............lc...b
+b..aaalaa........aaaala..b
+b...m.lc..........c.ml...b
+b..alaaaa........aaalaa..b
+b...l.....f...f.....l....b
+bbbbbbbbbbbbbbbbbbbbbbbbbb
