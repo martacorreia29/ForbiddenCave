@@ -6,6 +6,9 @@ import pygame.color
 from pygame.locals import *
 from pygame.color import *
 
+PATH_IMAGES = "./images/"
+PATH_SOUND = "./sound/"
+PATH_MAPS = "./maps/"
 
 # Map of level player is moving in
 class LevelMap:
@@ -120,7 +123,7 @@ class LevelMap:
             xpos = 0
             for tile in line:
                 if tile == "c":
-                    gem = Gem(xpos, ypos, "gem.png")
+                    gem = Gem(xpos, ypos, PATH_IMAGES + "gem.png")
                     self.gemgroup.add(gem)
                 xpos = xpos + size[0]
             ypos = ypos + size[1]
@@ -146,7 +149,7 @@ class LevelMap:
             xpos = 0
             for tile in line:
                 if tile == "d":
-                    door = Door(xpos, ypos, "door.png")
+                    door = Door(xpos, ypos, PATH_IMAGES + "door.png")
                     self.doorgroup.add(door)
                 xpos = xpos + size[0]
             ypos = ypos + size[1]
@@ -173,7 +176,7 @@ class LevelMap:
             xpos = 0
             for tile in line:
                 if tile == "f":
-                    fire = Fire(xpos, ypos, "fire.png")
+                    fire = Fire(xpos, ypos, PATH_IMAGES + "fire.png")
                     self.firegroup.add(fire)
                 xpos = xpos + size[0]
             ypos = ypos + size[1]
@@ -199,7 +202,7 @@ class LevelMap:
             xpos = 0
             for tile in line:
                 if tile == "m":
-                    monster = Monster(xpos, ypos, "monsterLeft.png", "monsterRight.png", self.levelsurface, self)
+                    monster = Monster(xpos, ypos, PATH_IMAGES + "monsterLeft.png", PATH_IMAGES + "monsterRight.png", self.levelsurface, self)
                     self.monstergroup.add(monster)
                 xpos = xpos + size[0]
             ypos = ypos + size[1]
@@ -225,7 +228,7 @@ class LevelMap:
             xpos = 0
             for tile in line:
                 if tile == "L" or tile == "l" or tile == "y": 
-                    ladder = Ladder(xpos, ypos , "ladder.png")
+                    ladder = Ladder(xpos, ypos , PATH_IMAGES + "ladder.png")
                     self.laddergroup.add(ladder) 
                                        
                 xpos = xpos + size[0]
@@ -252,8 +255,8 @@ class LevelMap:
             xpos = 0
             for tile in line:
                 if tile == "O": 
-                    elevator = Elevator(xpos, ypos, "elevator.png", self)
-                    self.elevatorgroup.add(elevator)                                      
+                    elevator = Elevator(xpos, ypos, PATH_IMAGES + "elevator.png", self)
+                    self.elevatorgroup.add(elevator)                                     
                 xpos = xpos + size[0]
             ypos = ypos + size[1]
         
@@ -278,7 +281,7 @@ class LevelMap:
             xpos = 0
             for tile in line:
                 if tile == "V": 
-                    bat = Bat(xpos, ypos, "bat.png", self)
+                    bat = Bat(xpos, ypos, PATH_IMAGES + "bat.png", self)
                     self.batgroup.add(bat)                                      
                 xpos = xpos + size[0]
             ypos = ypos + size[1]
@@ -916,22 +919,21 @@ class ForbiddenCave:
        self.highscore = 0
        
        # Level maps
-       self.maps = [ "level1.txt", "level2.txt", "level3.txt", "level4.txt", \
-                     "level5.txt", "level6.txt", "level7.txt", "level8.txt" ] 
+       self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
+                     PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
        
        # Sounds
-       self.gemSound = self.loadSound("gem.wav")    
-       self.jumpSound = self.loadSound("jump.wav")  
-       self.deadSound = self.loadSound("dead.wav") 
-       self.bonusSound = self.loadSound("bonus.wav")
-       self.doorSound = self.loadSound("door.wav") 
-       self.startSound = self.loadSound("start.wav") 
-       self.doneSound = self.loadSound("done.wav") 
-       self.overSound = self.loadSound("over.wav") 
+       self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
+       self.jumpSound = self.loadSound(PATH_SOUND + "jump.wav")  
+       self.deadSound = self.loadSound(PATH_SOUND + "dead.wav") 
+       self.bonusSound = self.loadSound(PATH_SOUND + "bonus.wav")
+       self.doorSound = self.loadSound(PATH_SOUND + "door.wav") 
+       self.startSound = self.loadSound(PATH_SOUND + "start.wav") 
+       self.doneSound = self.loadSound(PATH_SOUND + "done.wav") 
+       self.overSound = self.loadSound(PATH_SOUND + "over.wav") 
     
    # load sound
    def loadSound(self, name):
-    
         class NoneSound:
             def play(self): pass
         if not pygame.mixer or not pygame.mixer.get_init():
@@ -977,7 +979,7 @@ class ForbiddenCave:
                if self.levelcnt >= len(self.maps):
                    self.levelcnt = 0
                    self.beginbonus -= 500           
-               self.map = LevelMap("wall.png", "wall1.png", "wall2.png", self.maps[self.levelcnt], self.yoff)           
+               self.map = LevelMap(PATH_IMAGES + "wall.png", PATH_IMAGES + "wall1.png", PATH_IMAGES + "wall2.png", self.maps[self.levelcnt], self.yoff)           
                
                # Process game
                result = self.doMainLoop()
@@ -1021,7 +1023,7 @@ class ForbiddenCave:
    def doWelcomeLoop(self):
        
         # Load map for screen bounds decoration
-        map = LevelMap("wall.png", "wall1.png", "wall2.png", "welcome.txt", 0) 
+        map = LevelMap(PATH_IMAGES + "wall.png", PATH_IMAGES + "wall1.png", PATH_IMAGES + "wall2.png", "welcome.txt", 0) 
         background = map.fetchLevelSurface() 
         
         self.addText("Forbidden Cave", background, 0, 80, (255,48,48), THECOLORS['black'], 80, True)
@@ -1177,7 +1179,7 @@ class ForbiddenCave:
            
            # Create player sprite 
            self.startSound.play()
-           player = Player(40, 600, "playerLeft.png", "playerRight.png", "playerClimb.png", "scull.png", \
+           player = Player(40, 600, PATH_IMAGES + "playerLeft.png", PATH_IMAGES + "playerRight.png", PATH_IMAGES + "playerClimb.png", PATH_IMAGES + "scull.png", \
                            self.background, self.map)
            
            playergroup = pygame.sprite.RenderPlain()
@@ -1374,7 +1376,7 @@ class ForbiddenCave:
            
            # Skull sprite
            self.deadSound.play()
-           skull = Skull(player.rect.left, player.rect.top, "scull.png", self.background) 
+           skull = Skull(player.rect.left, player.rect.top, PATH_IMAGES + "scull.png", self.background) 
            skullgroup = pygame.sprite.RenderPlain()  
            skullgroup.add(skull)
            
