@@ -92,7 +92,7 @@ class LevelMap:
         # Retrieve tiles in neighborhood
         result = []
         for ndx in range(4):
-            result.append(self.textmap[yp+yd[ndx]][xp+xd[ndx]])
+            result.append(self.textmap[int(yp+yd[ndx])][int(xp+xd[ndx])])
         
         return result
                 
@@ -1207,7 +1207,7 @@ class ForbiddenCave:
                    if event.type == QUIT:
                        return self.GAMESTATE_QUIT
                    if event.type == KEYDOWN:
-                       if event.key == K_SPACE: # up
+                       if event.key == K_SPACE or K_UP: # up
                            if (player.jump == 0 and player.ymove == 0) \
                                 or player.doElevator == True:
                             self.jumpSound.play()
