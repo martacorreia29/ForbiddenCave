@@ -3,8 +3,10 @@ import os, pygame, random
 import pygame.gfxdraw
 import pygame.surface
 import pygame.color
+import PlayerAI
 from pygame.locals import *
 from pygame.color import *
+
 
 PATH_IMAGES = "./images/"
 PATH_SOUND = "./sound/"
@@ -383,8 +385,52 @@ class Player(AnimatedSprite):
         
         # Flag to indicate that player is on elevator
         self.doElevator = False
-        self.elevator = None    
-        
+        self.elevator = None 
+
+        # Player AI
+        self.ai = None
+
+
+        #TODO: remove if not needed
+        # sensors 
+        # self.sensorImg = PATH_IMAGES + "point.png" 
+        # self.leftSensor = None
+        # self.rightSensor = None
+        # self.downLeftSensor = None
+        # self.downRightSensor = None
+        # self.leftLongDistanceSensor = None
+        # self.rightLongDistanceSensor = None
+        # self.topLeftSensor = None
+        # self.topRightSensor = None
+
+           
+    # def refresh_sensors(self, screen, display):
+    #     self.leftSensor = (self.rect.centerx - self.rect.width , self.rect.centery)
+    #     self.rightSensor = (self.rect.centerx  + self.rect.width , self.rect.centery)
+    #     self.downLeftSensor = (self.rect.centerx - self.rect.width , self.rect.centery + self.rect.height -10)
+    #     self.downRightSensor = (self.rect.centerx + self.rect.width , self.rect.centery + self.rect.height -10)
+    #     #self.leftLongDistanceSensor = (self.rect.centerx - self.rect.width * 2, self.rect.centery)
+    #     #self.rightLongDistanceSensor = (self.rect.centerx  + self.rect.width * 2 , self.rect.centery)
+    #     self.topLeftSensor = (self.rect.centerx - self.rect.width , self.rect.centery - self.rect.height)
+    #     self.topRightSensor = (self.rect.centerx + self.rect.width , self.rect.centery - self.rect.height)
+
+    #     # print("Player: x: ", self.rect.x, "y: ", self.rect.y)
+    #     # print("leftSensor: x: ", self.leftSensor[0], "y: ", self.leftSensor[1])
+    #     # print("rightSensor: x: " , self.rightSensor[0], "y: ", self.rightSensor[1])
+    #     # print("downLeftSensor:  x: " , self.downLeftSensor[0], "y: ", self.downLeftSensor[1])
+    #     # print("downRightSensor:  x: " , self.downRightSensor[0], "y: ", self.downRightSensor[1])
+    #     # print("\n")
+
+    #     if display:
+    #             screen.blit(pygame.image.load(self.sensorImg), self.leftSensor)
+    #             screen.blit(pygame.image.load(self.sensorImg), self.rightSensor)
+    #             screen.blit(pygame.image.load(self.sensorImg), self.downLeftSensor)
+    #             screen.blit(pygame.image.load(self.sensorImg), self.downRightSensor)
+    #             #screen.blit(pygame.image.load(self.sensorImg), self.leftLongDistanceSensor)
+    #             #screen.blit(pygame.image.load(self.sensorImg), self.rightLongDistanceSensor)
+    #             screen.blit(pygame.image.load(self.sensorImg), self.topLeftSensor)
+    #             screen.blit(pygame.image.load(self.sensorImg), self.topRightSensor)
+
     # print( player's state
     def printState(self):
         print(("Position: " + str(self.rect.left) + ", " + str(self.rect.top)))
@@ -1248,7 +1294,12 @@ class ForbiddenCave:
                batgroup.update()
                playergroup.update()
                firegroup.update()
-               
+
+               #player.ai.findGem(gemgroup)
+               player.ai = PlayerAI.PlayerAI(player, self.map.textmap)
+               print(PlayerAI.map_to_screen((13,4)))
+               #print(PlayerAI.screen_to_map((1040, 680)))
+         
                ##################################################
                ### print( game state
                ################################################## 
@@ -1273,7 +1324,7 @@ class ForbiddenCave:
                    if not doorsoundPlayed:
                        self.doorSound.play()
                        doorsoundPlayed = True
-                   doorgroup.draw(self.screen)                       
+                   doorgroup.draw(self.screen)                   
                pygame.display.flip()  
                
                ##################################################
