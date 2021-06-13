@@ -60,7 +60,7 @@ def aStar(point, goal, map):
     path = []
     searching = True
 
-    # convert to txt coords
+    # convert to txt map coords
     point = screen_to_map(point)
     goal = screen_to_map(goal)
 
@@ -152,16 +152,16 @@ def neighbor(point, theta):
 
 # Map
 screenSize = (1040, 680)
-mapSize = (26, 16)
+mapSize = (26, 17) # it has to be 17 becouse the first line is the bonus score
 
 def screen_to_map(point):
     x, y = point
-    x = x * mapSize[0] / screenSize[0]
-    y = y * mapSize[1] / screenSize[1]
-    return (x, y)
+    x = x * mapSize[0] // screenSize[0]
+    y = y * mapSize[1] // screenSize[1]
+    return (x, y-1) # becouse the first line is the bonus score
 
 def map_to_screen(point):
     x, y = point
     x = x * screenSize[0] / mapSize[0]
-    y = y * screenSize[1] / mapSize[1]
+    y = (y + 1) * screenSize[1] / mapSize[1] # becouse the first line is the bonus score
     return (x, y)

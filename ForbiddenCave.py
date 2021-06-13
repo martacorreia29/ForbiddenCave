@@ -1296,9 +1296,14 @@ class ForbiddenCave:
                firegroup.update()
 
                #player.ai.findGem(gemgroup)
-               player.ai = PlayerAI.PlayerAI(player, self.map.textmap)
-               print(PlayerAI.map_to_screen((13,4)))
-               #print(PlayerAI.screen_to_map((1040, 680)))
+               #player.ai = PlayerAI.PlayerAI(player, self.map.textmap)
+
+               #for gem in gemgroup:
+                #print(gem.rect.centerx, gem.rect.centery)
+               #print(player.rect.x, player.rect.y)
+
+               print(PlayerAI.map_to_screen((26,16)))
+               print(PlayerAI.screen_to_map((1040, 680 )))
          
                ##################################################
                ### print( game state
@@ -1324,7 +1329,8 @@ class ForbiddenCave:
                    if not doorsoundPlayed:
                        self.doorSound.play()
                        doorsoundPlayed = True
-                   doorgroup.draw(self.screen)                   
+                   doorgroup.draw(self.screen)
+               #self.screen.blit(pygame.image.load(PATH_IMAGES + "gem.png"), PlayerAI.map_to_screen((26,16)))                  
                pygame.display.flip()  
                
                ##################################################
