@@ -965,7 +965,7 @@ class ForbiddenCave:
        self.highscore = 0
        
        # Level maps
-       self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
+       self.maps = [ PATH_MAPS + "level2.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                      PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
        
        # Sounds
@@ -1295,10 +1295,9 @@ class ForbiddenCave:
                playergroup.update()
                firegroup.update()
 
+               # Player AI
                player.ai = PlayerAI.PlayerAI(player, self.map.textmap, self.screen)
                player.ai.findGem(gemgroup)
-
-               #print(len(self.map.textmap[0]))
          
                ##################################################
                ### print( game state

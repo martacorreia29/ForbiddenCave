@@ -3,6 +3,7 @@ import random
 import math
 from queue import PriorityQueue
 
+# Contains player AI logic
 class PlayerAI:
     def __init__(self, player, map, screen):
         self.player = player
@@ -39,7 +40,9 @@ class PlayerAI:
         return closestGemPath
 
 
-# Node for aStar
+## A* algorithm ##
+
+# Node for A*
 class Node():
     def __init__(self, point, parent, cost, heuristicCost):
         self.point = point
@@ -131,7 +134,7 @@ def onMap(point, textmap):
 def isWall(point, textmap):
     x, y = point
     c = textmap[y][x]
-    return c == 'b' or c == 'a' or c == 'f' or c == 'O'
+    return c == 'b' or c == 'a' or c == 'f' or c == 'O' or c == 'm' or c == 'V'
 
 def neighbor(point, theta):
     (x,y) = point
@@ -162,7 +165,7 @@ def distance_euclidian(p1, p2):
     x2, y2 = map_to_screen(p2)
     return math.sqrt(pow(abs(x1 - x2),2) + pow(abs(y1 - y2),2))
 
-# Map
+## Map ##
 screenSize = (1040, 680)
 mapSize = (26, 17) # it has to be 17 becouse the first line is the bonus score
 
@@ -193,6 +196,8 @@ def sortQueue(queue):
     
     return queue
 
+
+## Debug draw ##
 clock = pygame.time.Clock()
 
 def drawPath(path, screen):
