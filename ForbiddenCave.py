@@ -3,8 +3,10 @@ import os, pygame, random
 import pygame.gfxdraw
 import pygame.surface
 import pygame.color
+import PlayerAI
 from pygame.locals import *
 from pygame.color import *
+
 
 PATH_IMAGES = "./images/"
 PATH_SOUND = "./sound/"
@@ -384,8 +386,52 @@ class Player(AnimatedSprite):
         
         # Flag to indicate that player is on elevator
         self.doElevator = False
-        self.elevator = None    
-        
+        self.elevator = None 
+
+        # Player AI
+        self.ai = None
+
+
+        #TODO: remove if not needed
+        # sensors 
+        # self.sensorImg = PATH_IMAGES + "point.png" 
+        # self.leftSensor = None
+        # self.rightSensor = None
+        # self.downLeftSensor = None
+        # self.downRightSensor = None
+        # self.leftLongDistanceSensor = None
+        # self.rightLongDistanceSensor = None
+        # self.topLeftSensor = None
+        # self.topRightSensor = None
+
+           
+    # def refresh_sensors(self, screen, display):
+    #     self.leftSensor = (self.rect.centerx - self.rect.width , self.rect.centery)
+    #     self.rightSensor = (self.rect.centerx  + self.rect.width , self.rect.centery)
+    #     self.downLeftSensor = (self.rect.centerx - self.rect.width , self.rect.centery + self.rect.height -10)
+    #     self.downRightSensor = (self.rect.centerx + self.rect.width , self.rect.centery + self.rect.height -10)
+    #     #self.leftLongDistanceSensor = (self.rect.centerx - self.rect.width * 2, self.rect.centery)
+    #     #self.rightLongDistanceSensor = (self.rect.centerx  + self.rect.width * 2 , self.rect.centery)
+    #     self.topLeftSensor = (self.rect.centerx - self.rect.width , self.rect.centery - self.rect.height)
+    #     self.topRightSensor = (self.rect.centerx + self.rect.width , self.rect.centery - self.rect.height)
+
+    #     # print("Player: x: ", self.rect.x, "y: ", self.rect.y)
+    #     # print("leftSensor: x: ", self.leftSensor[0], "y: ", self.leftSensor[1])
+    #     # print("rightSensor: x: " , self.rightSensor[0], "y: ", self.rightSensor[1])
+    #     # print("downLeftSensor:  x: " , self.downLeftSensor[0], "y: ", self.downLeftSensor[1])
+    #     # print("downRightSensor:  x: " , self.downRightSensor[0], "y: ", self.downRightSensor[1])
+    #     # print("\n")
+
+    #     if display:
+    #             screen.blit(pygame.image.load(self.sensorImg), self.leftSensor)
+    #             screen.blit(pygame.image.load(self.sensorImg), self.rightSensor)
+    #             screen.blit(pygame.image.load(self.sensorImg), self.downLeftSensor)
+    #             screen.blit(pygame.image.load(self.sensorImg), self.downRightSensor)
+    #             #screen.blit(pygame.image.load(self.sensorImg), self.leftLongDistanceSensor)
+    #             #screen.blit(pygame.image.load(self.sensorImg), self.rightLongDistanceSensor)
+    #             screen.blit(pygame.image.load(self.sensorImg), self.topLeftSensor)
+    #             screen.blit(pygame.image.load(self.sensorImg), self.topRightSensor)
+
     # print( player's state
     def printState(self):
         print(("Position: " + str(self.rect.left) + ", " + str(self.rect.top)))
@@ -900,6 +946,7 @@ class ForbiddenCave:
        self.screen = None
        self.background = None
        self.map = None
+       self.costs = None
        self.yoff = 40
        
        # Game state constants
@@ -920,7 +967,7 @@ class ForbiddenCave:
        self.highscore = 0
        
        # Level maps
-       self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
+       self.maps = [ PATH_MAPS + "level2.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                      PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
        #self.maps = [PATH_MAPS + "level8.txt"]
 
@@ -982,7 +1029,8 @@ class ForbiddenCave:
                    self.levelcnt = 0
                    self.beginbonus -= 500           
                self.map = LevelMap(PATH_IMAGES + "wall.png", PATH_IMAGES + "wall1.png", PATH_IMAGES + "wall2.png", self.maps[self.levelcnt], self.yoff)           
-               
+               self.costs = costs(self.map.textmap)
+
                # Process game
                result = self.doMainLoop()
                
@@ -1249,7 +1297,11 @@ class ForbiddenCave:
                batgroup.update()
                playergroup.update()
                firegroup.update()
-               
+
+               # Player AI
+               player.ai = PlayerAI.PlayerAI(player, self.map.textmap, self.screen, self.costs)
+               player.ai.findGem(gemgroup)
+         
                ##################################################
                ### print( game state
                ################################################## 
@@ -1274,7 +1326,8 @@ class ForbiddenCave:
                    if not doorsoundPlayed:
                        self.doorSound.play()
                        doorsoundPlayed = True
-                   doorgroup.draw(self.screen)                       
+                   doorgroup.draw(self.screen)
+               #self.screen.blit(pygame.image.load(PATH_IMAGES + "gem.png"), PlayerAI.map_to_screen((26,16)))                  
                pygame.display.flip()  
                
                ##################################################
@@ -1408,6 +1461,31 @@ class ForbiddenCave:
            else:
                # Game over
                return self.GAMESTATE_DEAD
+
+def costs(map):
+    costMap = [[0]*len(map[0]) for i in range(len(map))]
+    i = -1
+    j = -1
+    for column in map:
+        j += 1
+        i = -1
+        for row in column:
+            i += 1
+            #if row == '.' and PlayerAI.onMap((i, j+1), map) and (map[j+1][i] == 'a' or map[j+1][i] == 'b'):
+             #   costMap[j][i] -= 10
+
+            #if row == '.' and PlayerAI.onMap((i,j+1), map) and map[j+1][i] != 'a': #and (PlayerAI.onMap((i,j+2), map) and map[j+2][i] != 'a')) \
+                #and (PlayerAI.onMap((i-1,j+1), map) and map[j+1][i-1] != 'a') and (PlayerAI.onMap((i+1,j+1), map) and map[j+1][i+1] != 'a'):
+                #costMap[j][i] += 999
+                #print("aa")
+
+            #if row == '.' and (PlayerAI.onMap((i,j-1), map) and map[j+1][i] == 'a'):
+                #costMap[j][i] += 999
+
+            if row == '.' and (PlayerAI.onMap((i-1,j+2), map) and map[j+2][i-1] == 'a'):
+                costMap[j][i] -= 10
+
+    return costMap
 
 # Entrypoint
 def main():
