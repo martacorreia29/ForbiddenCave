@@ -1,10 +1,13 @@
+import pygame
 import random
 import math
+from queue import PriorityQueue
 
 class PlayerAI:
-    def __init__(self, player, map):
+    def __init__(self, player, map, screen):
         self.player = player
         self.map = map
+        self.screen = screen
         
     def random():
         action = random.randint(0, 10)
@@ -16,9 +19,13 @@ class PlayerAI:
     def findGem(self, gemGroup):
         # Foe all gems calculate aStar
         playerPos = (self.player.rect.centerx, self.player.rect.centery)
+        bool = True
+
         for gem in gemGroup:
-            goal = (gem.rect.x, gem.rect.y)
-            path = aStar(playerPos, goal, self.map)
+            if bool:
+                goal = (gem.rect.x, gem.rect.y)
+                path = aStar(playerPos, goal, self.map, self.screen)
+                bool = False
 
             #print(gem.rect.x, gem.rect.y)
 
@@ -36,37 +43,20 @@ class Node():
     def __repr__(self):
         return "( " + str(self.point) + " -> " + str(self.heuristicCost) + " )"
 
-## Heuristics
-def heuristic(p1,p2):
-    return distance_euclidian(p1, p2)
-    #return distance_manhattan(p1, p2)
-
-# Calculates the manhattan distace between 2 points
-def distance_manhattan(p1, p2):
-    x1, y1 = p1
-    x2, y2 = p2
-    return abs(x1 - x2) + abs(y1 - y2)
-
-# Calculates the euclidian distace between 2 points
-def distance_euclidian(p1, p2):
-    x1, y1 = p1
-    x2, y2 = p2
-    return math.sqrt(pow(abs(x1 - x2),2) + pow(abs(y1 - y2),2))
-
 # Calculates the best path between two points using an version of the A * algorithm
-def aStar(point, goal, map):
+def aStar(point, goal, textmap, screen):
     priorityQueue = []
     visited = []
     path = []
     searching = True
 
-    # convert to txt map coords
-    point = screen_to_map(point)
-    goal = screen_to_map(goal)
-
     if point == goal:
         searching == False
         path.append(point)
+
+    # convert to txt map coords
+    point = screen_to_map(point)
+    goal = screen_to_map(goal)
 
     h = heuristic(point, goal)
     starNode = Node(point, None, 0, h)
@@ -80,37 +70,37 @@ def aStar(point, goal, map):
         # pop the first node on the queue to be visited
         node = priorityQueue[0]
         priorityQueue.remove(node)
-        hex = node.hex
+        currentTile = node.point
 
         ## Path discovery visualization
-        #drawCircle(hex)
+        drawCircle(currentTile, screen)
         ###
 
-        if hex == goal:
+        if currentTile == goal:
             # we found the goal
             searching = False
             step = node
             while step:
                 # Build path
-                path.append(step.hex)
+                path.append(step.point)
                 step = step.parent
 
         ## check neighbors
         for hdg in range(4):
-            nbr = neighbor(hex,hdg)
+            nbr = neighbor(currentTile, hdg)
             # if on the map and not a wall
-            if map.onmap(nbr) and nbr not in visited and terr[nbr[0]][nbr[1]] < 100:
+            if onMap(nbr, textmap) and nbr not in visited and not isWall(nbr, textmap):
                 # get distance
                 h = heuristic(nbr, goal)
                 # get cost
-                c = node.cost + terr[nbr[0]][nbr[1]]
+                c = node.cost #TODO: We could add a cost to each tile
 
                 nbrNode = Node(nbr, node, c, h + c)
 
                 # do we need to update this node on the queue
                 inQueue = False
                 for x in priorityQueue:
-                    if x.hex == nbrNode.hex:
+                    if x.point == nbrNode.point:
                         inQueue = True
                         if(x.cost > nbrNode.cost):
                             priorityQueue.remove(x)
@@ -120,26 +110,23 @@ def aStar(point, goal, map):
                 if(not inQueue):
                     priorityQueue.append(nbrNode)
 
-        visited.append(node.hex)   
+        visited.append(node.point)   
     return path
 
-# selection sort
-def sortQueue(queue):
-    for i in range(len(queue)):
-        # We assume that the first item of the unsorted segment is the smallest
-        lowest_value_index = i
-        # This loop iterates over the unsorted items
-        for j in range(i + 1, len(queue)):
-            if queue[j].heuristicCost < queue[lowest_value_index].heuristicCost:
-                lowest_value_index = j
-        # Swap values of the lowest unsorted element with the first unsorted
-        # element
-        queue[i], queue[lowest_value_index] = queue[lowest_value_index], queue[i]
-    
-    return queue
+def onMap(point, textmap):
+    x, y = point
+    width =  len(textmap[0])
+    height = len(textmap)
+    return x > 0 and x < width and y > 0 and y < height
+
+
+def isWall(point, textmap):
+    x, y = point
+    c = textmap[y][x]
+    return c == 'b' or c == 'a' or c == 'f' or c == 'O'
 
 def neighbor(point, theta):
-    (x,y) = screen_to_map(point)
+    (x,y) = point
     if theta == 0: # left
         x = x - 1
     elif theta == 1: # botton
@@ -148,7 +135,24 @@ def neighbor(point, theta):
         x = x + 1
     elif theta == 3: # top
         y = y - 1
-    return map_to_screen(x,y)
+    return (x,y)
+
+## Heuristics
+def heuristic(p1,p2):
+    return distance_euclidian(p1, p2)
+    #return distance_manhattan(p1, p2)
+
+# Calculates the manhattan distace between 2 points
+def distance_manhattan(p1, p2):
+    x1, y1 = map_to_screen(p1)
+    x2, y2 = map_to_screen(p2)
+    return abs(x1 - x2) + abs(y1 - y2)
+
+# Calculates the euclidian distace between 2 points
+def distance_euclidian(p1, p2):
+    x1, y1 = map_to_screen(p1)
+    x2, y2 = map_to_screen(p2)
+    return math.sqrt(pow(abs(x1 - x2),2) + pow(abs(y1 - y2),2))
 
 # Map
 screenSize = (1040, 680)
@@ -165,3 +169,28 @@ def map_to_screen(point):
     x = x * screenSize[0] / mapSize[0]
     y = (y + 1) * screenSize[1] / mapSize[1] # becouse the first line is the bonus score
     return (x, y)
+
+# selection sort
+def sortQueue(queue):
+    for i in range(len(queue)):
+        # We assume that the first item of the unsorted segment is the smallest
+        lowest_value_index = i
+        # This loop iterates over the unsorted items
+        for j in range(i + 1, len(queue)):
+            if queue[j].heuristicCost < queue[lowest_value_index].heuristicCost:
+                lowest_value_index = j
+        # Swap values of the lowest unsorted element with the first unsorted
+        # element
+        queue[i], queue[lowest_value_index] = queue[lowest_value_index], queue[i]
+    
+    return queue
+
+clock = pygame.time.Clock()
+
+# Auxiliary function to draw a circle o the node being visited
+def drawCircle(hex, screen, color = (255,255,255)):
+    (x,y) = map_to_screen((hex))
+    (x,y) = (x+20, y+20) # center
+    pygame.draw.circle(screen, color,(x,y),5,0)
+    pygame.display.flip()
+    #clock.tick(10)

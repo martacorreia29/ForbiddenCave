@@ -1295,15 +1295,10 @@ class ForbiddenCave:
                playergroup.update()
                firegroup.update()
 
-               #player.ai.findGem(gemgroup)
-               #player.ai = PlayerAI.PlayerAI(player, self.map.textmap)
+               player.ai = PlayerAI.PlayerAI(player, self.map.textmap, self.screen)
+               player.ai.findGem(gemgroup)
 
-               #for gem in gemgroup:
-                #print(gem.rect.centerx, gem.rect.centery)
-               #print(player.rect.x, player.rect.y)
-
-               print(PlayerAI.map_to_screen((26,16)))
-               print(PlayerAI.screen_to_map((1040, 680 )))
+               #print(len(self.map.textmap[0]))
          
                ##################################################
                ### print( game state
