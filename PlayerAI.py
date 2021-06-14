@@ -20,27 +20,46 @@ class PlayerAI:
     def findGem(self, gemGroup):
         if(len(gemGroup) < 1):
             return []
+        
+        playerPos = (self.player.rect.centerx, self.player.rect.centery)
+        closestGems = gemGroup
+
+        if(len(gemGroup) > 4):
+            gemsDistances = {}
+            # find closest gem group
+            for gem in gemGroup:
+                goal = (gem.rect.x, gem.rect.y)
+                distance = distance_euclidian_onScreen(playerPos, goal)
+                gemsDistances.update({distance:gem})            
+            closestGems = [gemsDistances[k] for k in sorted(list(gemsDistances.keys()))[:4]]
 
         # Foe all gems calculate aStar
-        playerPos = (self.player.rect.centerx, self.player.rect.centery)
-
         paths = []
-        for gem in gemGroup:
+        for gem in closestGems:
             goal = (gem.rect.x, gem.rect.y)
-            path = aStar(playerPos, goal, self.map)
+            path = aStar(playerPos, goal, self.map, self.screen)
             paths.append(path)
 
         closestGemPath = paths[0]
+        closestAlpha = closestGemPath.size + closestGemPath.cost
         for path in paths:
-            if len(path) < len(closestGemPath):
+            alpha = path.size + path.cost
+            if alpha < closestAlpha:
                 closestGemPath = path
+                closestAlpha = alpha
 
+        #print(closestGemPath.cost)
         drawPath(closestGemPath, self.screen)
 
         return closestGemPath
 
-
 ## A* algorithm ##
+
+class Path():
+    def __init__(self, nodes, size, cost):
+        self.size = size
+        self.cost = cost
+        self.nodes = nodes
 
 # Node for A*
 class Node():
@@ -56,15 +75,15 @@ class Node():
         return "( " + str(self.point) + " -> " + str(self.heuristicCost) + " )"
 
 # Calculates the best path between two points using an version of the A * algorithm
-def aStar(point, goal, textmap):
+def aStar(point, goal, textmap, screen):
     priorityQueue = []
     visited = []
-    path = []
+    path = None
     searching = True
 
     if point == goal:
         searching == False
-        path.append(point)
+        path.append(Path(point, 1, 0))
 
     # convert to txt map coords
     point = screen_to_map(point)
@@ -92,10 +111,15 @@ def aStar(point, goal, textmap):
             # we found the goal
             searching = False
             step = node
+            totalCost = 0
+            nodes = []
             while step:
                 # Build path
-                path.append(map_to_screen(step.point))
+                nodes.append(map_to_screen(step.point))
+                totalCost += step.cost
                 step = step.parent
+            path = Path(nodes, len(nodes),  totalCost)
+            
 
         ## check neighbors
         for hdg in range(4):
@@ -105,7 +129,7 @@ def aStar(point, goal, textmap):
                 # get distance
                 h = heuristic(nbr, goal)
                 # get cost
-                c = node.cost #TODO: We could add a cost to each tile
+                c = node.cost + calcTileCost(nbr, textmap, screen)#TODO: We could add a cost to each tile
 
                 nbrNode = Node(nbr, node, c, h + c)
 
@@ -125,6 +149,21 @@ def aStar(point, goal, textmap):
         visited.append(node.point)   
     return path
 
+def calcTileCost(point, textmap, screen):
+    x, y = point
+    c = textmap[y][x]
+    cost = 0
+    if(c == '.'):
+        hasFloor = False
+        for i in range(3):
+            if onMap((x,y+i+1) , textmap):
+                temp = textmap[y+i+1][x] == 'a' or textmap[y+i+1][x] == 'b'
+                hasFloor = hasFloor or temp
+        
+        cost = 0 if hasFloor else 100000000
+        #print (cost)
+    return cost 
+    
 def onMap(point, textmap):
     x, y = point
     width =  len(textmap[0])
@@ -134,7 +173,7 @@ def onMap(point, textmap):
 def isWall(point, textmap):
     x, y = point
     c = textmap[y][x]
-    return c == 'b' or c == 'a' or c == 'f' or c == 'O' or c == 'm' or c == 'V'
+    return c == 'b' or c == 'a' or c == 'f' #or c == 'O' or c == 'm' or c == 'V'
 
 def neighbor(point, theta):
     (x,y) = point
@@ -163,6 +202,11 @@ def distance_manhattan(p1, p2):
 def distance_euclidian(p1, p2):
     x1, y1 = map_to_screen(p1)
     x2, y2 = map_to_screen(p2)
+    return math.sqrt(pow(abs(x1 - x2),2) + pow(abs(y1 - y2),2))
+
+def distance_euclidian_onScreen(p1, p2):
+    x1, y1 = p1
+    x2, y2 = p2
     return math.sqrt(pow(abs(x1 - x2),2) + pow(abs(y1 - y2),2))
 
 ## Map ##
@@ -200,9 +244,9 @@ def sortQueue(queue):
 ## Debug draw ##
 clock = pygame.time.Clock()
 
-def drawPath(path, screen):
-    for node in path:
-        drawCircle(node, screen)
+def drawPath(path, screen, color = (255,255,255)):
+    for node in path.nodes:
+        drawCircle(node, screen, color)
 
 # Auxiliary function to draw a circle o the node being visited
 def drawCircle(point, screen, color = (255,255,255)):

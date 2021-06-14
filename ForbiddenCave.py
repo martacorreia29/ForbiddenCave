@@ -12,6 +12,8 @@ PATH_IMAGES = "./images/"
 PATH_SOUND = "./sound/"
 PATH_MAPS = "./maps/"
 
+UPDATE_AI_FRAME = 20
+
 # Map of level player is moving in
 class LevelMap:
     
@@ -963,6 +965,8 @@ class ForbiddenCave:
        self.score = 0
        self.bonusscore = 0
        self.highscore = 0
+
+       self.frameCounter = 0 
        
        # Level maps
        self.maps = [ PATH_MAPS + "level2.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
@@ -1296,9 +1300,15 @@ class ForbiddenCave:
                firegroup.update()
 
                # Player AI
-               player.ai = PlayerAI.PlayerAI(player, self.map.textmap, self.screen)
-               player.ai.findGem(gemgroup)
+               if not player.ai:
+                player.ai = PlayerAI.PlayerAI(player, self.map.textmap, self.screen)
+               
+               self.frameCounter += 1
+               if self.frameCounter == UPDATE_AI_FRAME:
+                player.ai.findGem(gemgroup)
+                self.frameCounter = 0
          
+
                ##################################################
                ### print( game state
                ################################################## 
