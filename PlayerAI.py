@@ -21,26 +21,46 @@ class PlayerAI:
     def findGem(self, gemGroup):
         if(len(gemGroup) < 1):
             return []
+        
+        playerPos = (self.player.rect.centerx, self.player.rect.centery)
+        closestGems = gemGroup
+
+        if(len(gemGroup) > 4):
+            gemsDistances = {}
+            # find closest gem group
+            for gem in gemGroup:
+                goal = (gem.rect.x, gem.rect.y)
+                distance = distance_euclidian_onScreen(playerPos, goal)
+                gemsDistances.update({distance:gem})            
+            closestGems = [gemsDistances[k] for k in sorted(list(gemsDistances.keys()))[:4]]
 
         # Foe all gems calculate aStar
-        playerPos = (self.player.rect.centerx, self.player.rect.centery)
-
         paths = []
-        for gem in gemGroup:
+        for gem in closestGems:
             goal = (gem.rect.x, gem.rect.y)
-            path = aStar(playerPos, goal, self.map, self.costMap)
+            path = aStar(playerPos, goal, self.map, self.screen, self.costMap)
             paths.append(path)
 
         closestGemPath = paths[0]
+        closestAlpha = closestGemPath.size + closestGemPath.cost
         for path in paths:
-            if len(path) < len(closestGemPath):
+            alpha = path.size + path.cost
+            if alpha < closestAlpha:
                 closestGemPath = path
+                closestAlpha = alpha
 
+        #print(closestGemPath.cost)
         drawPath(closestGemPath, self.screen)
 
         return closestGemPath
 
 ## A* algorithm ##
+
+class Path():
+    def __init__(self, nodes, size, cost):
+        self.size = size
+        self.cost = cost
+        self.nodes = nodes
 
 # Node for A*
 class Node():
@@ -56,15 +76,15 @@ class Node():
         return "( " + str(self.point) + " -> " + str(self.heuristicCost) + " )"
 
 # Calculates the best path between two points using an version of the A * algorithm
-def aStar(point, goal, textmap, costMap):
+def aStar(point, goal, textmap, screen, costMap):
     priorityQueue = []
     visited = []
-    path = []
+    path = None
     searching = True
 
     if point == goal:
         searching == False
-        path.append(point)
+        path.append(Path(point, 1, 0))
 
     # convert to txt map coords
     point = screen_to_map(point)
@@ -91,10 +111,15 @@ def aStar(point, goal, textmap, costMap):
             # we found the goal
             searching = False
             step = node
+            totalCost = 0
+            nodes = []
             while step:
-                # build path
-                path.append(map_to_screen(step.point))
+                # Build path
+                nodes.append(map_to_screen(step.point))
+                totalCost += step.cost
                 step = step.parent
+            path = Path(nodes, len(nodes),  totalCost)
+            
 
         # check neighbors
         for hdg in range(4):
@@ -105,10 +130,10 @@ def aStar(point, goal, textmap, costMap):
                 h = heuristic(nbr, goal)
 
                 # get cost
-                c = node.cost #TODO: We could add a cost to each tile
-                c += costMap[nbr[1]][nbr[0]]
+                c = node.cost + calcTileCost(nbr, textmap, screen)#TODO: We could add a cost to each tile
 
-                nbrNode = Node(nbr, node, c, h*0.5 + c)
+                nbrNode = Node(nbr, node, c, h + c)
+                c += costMap[nbr[1]][nbr[0]]
 
                 # do we need to update this node on the queue
                 inQueue = False
@@ -126,6 +151,47 @@ def aStar(point, goal, textmap, costMap):
         visited.append(node.point)   
     return path
 
+idk = True
+
+def calcTileCost(point, textmap, screen):
+    global idk
+    x, y = point
+    c = textmap[y][x]
+    cost = 0
+    if(c == '.'):
+        hasFloor = False
+        for i in range(3):
+            if onMap((x,y+i+1) , textmap):
+                temp = textmap[y+i+1][x] == 'a' or textmap[y+i+1][x] == 'b' or textmap[y+i+1][x] == 'l'
+                hasFloor = hasFloor or temp
+            
+        hasPlatform = False 
+        for i in range(-2,3):
+            if i != 0:
+                for j in range(1, 3):
+                    a = x + i
+                    b = y - j
+                    if idk:
+                        drawCircle(map_to_screen((a,b)), screen, (255,0,0))
+
+                    if onMap((a,b), textmap) and textmap[b][a] == 'a':
+                        hasPlatform = True
+
+        idk = False
+        
+        if hasFloor: 
+            cost = 0
+        # _ _
+        elif ((onMap((x-1,y+1), textmap) and textmap[y+1][x-1] == 'a') or (onMap((x+1,y+1), textmap) and textmap[y+1][x+1] == 'a')):
+            cost = 0
+        elif hasPlatform:
+            #drawCircle(map_to_screen(point), screen, (255,0,0))
+            cost = 20
+        else: 
+            cost = 999
+        #print (cost)
+    return cost 
+    
 def onMap(point, textmap):
     x, y = point
     width =  len(textmap[0])
@@ -166,6 +232,11 @@ def distance_euclidian(p1, p2):
     x2, y2 = map_to_screen(p2)
     return math.sqrt(pow(abs(x1 - x2),2) + pow(abs(y1 - y2),2))
 
+def distance_euclidian_onScreen(p1, p2):
+    x1, y1 = p1
+    x2, y2 = p2
+    return math.sqrt(pow(abs(x1 - x2),2) + pow(abs(y1 - y2),2))
+
 ## Map ##
 screenSize = (1040, 680)
 mapSize = (26, 17) # it has to be 17 because the first line is the bonus score
@@ -201,9 +272,9 @@ def sortQueue(queue):
 ## Debug draw ##
 clock = pygame.time.Clock()
 
-def drawPath(path, screen):
-    for node in path:
-        drawCircle(node, screen)
+def drawPath(path, screen, color = (255,255,255)):
+    for node in path.nodes:
+        drawCircle(node, screen, color)
 
 # Auxiliary function to draw a circle o the node being visited
 def drawCircle(point, screen, color = (255,255,255)):
@@ -211,4 +282,4 @@ def drawCircle(point, screen, color = (255,255,255)):
     (x,y) = (x+20, y+20) # center
     pygame.draw.circle(screen, color,(x,y),5,0)
     pygame.display.flip()
-    #clock.tick(10)
+    clock.tick(3)

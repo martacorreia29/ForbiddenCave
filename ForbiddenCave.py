@@ -7,10 +7,11 @@ import PlayerAI
 from pygame.locals import *
 from pygame.color import *
 
-
 PATH_IMAGES = "./images/"
 PATH_SOUND = "./sound/"
 PATH_MAPS = "./maps/"
+
+UPDATE_AI_FRAME = 20
 
 # Map of level player is moving in
 class LevelMap:
@@ -965,11 +966,13 @@ class ForbiddenCave:
        self.score = 0
        self.bonusscore = 0
        self.highscore = 0
+
+       self.frameCounter = 0 
        
        # Level maps
-       self.maps = [ PATH_MAPS + "level2.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
-                     PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       #self.maps = [PATH_MAPS + "level8.txt"]
+       #self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
+                    #PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
+       self.maps = [PATH_MAPS + "level1.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1228,7 +1231,8 @@ class ForbiddenCave:
            
            # Create player sprite 
            self.startSound.play()
-           player = Player(40, 600, PATH_IMAGES + "playerLeft.png", PATH_IMAGES + "playerRight.png", PATH_IMAGES + "playerClimb.png", PATH_IMAGES + "scull.png", \
+           initialPos = (720, 200) #(40, 600)
+           player = Player(initialPos[0], initialPos[1], PATH_IMAGES + "playerLeft.png", PATH_IMAGES + "playerRight.png", PATH_IMAGES + "playerClimb.png", PATH_IMAGES + "scull.png", \
                            self.background, self.map)
            
            playergroup = pygame.sprite.RenderPlain()
@@ -1299,9 +1303,14 @@ class ForbiddenCave:
                firegroup.update()
 
                # Player AI
-               player.ai = PlayerAI.PlayerAI(player, self.map.textmap, self.screen, self.costs)
-               player.ai.findGem(gemgroup)
+               if not player.ai:
+                    player.ai = PlayerAI.PlayerAI(player, self.map.textmap, self.screen, self.costs)
+               self.frameCounter += 1
+               if self.frameCounter == UPDATE_AI_FRAME:
+                player.ai.findGem(gemgroup)
+                self.frameCounter = 0
          
+
                ##################################################
                ### print( game state
                ################################################## 
@@ -1479,11 +1488,8 @@ def costs(map):
                 #costMap[j][i] += 999
                 #print("aa")
 
-            #if row == '.' and (PlayerAI.onMap((i,j-1), map) and map[j+1][i] == 'a'):
-                #costMap[j][i] += 999
-
-            if row == '.' and (PlayerAI.onMap((i-1,j+2), map) and map[j+2][i-1] == 'a'):
-                costMap[j][i] -= 10
+            #if row == '.' and ((PlayerAI.onMap((i-1,j+1), map) and map[j+1][i-1] == 'a') or (PlayerAI.onMap((i+1,j+1), map) and map[j+1][i+1] == 'a')):
+                #costMap[j][i] -= 10000000
 
     return costMap
 
