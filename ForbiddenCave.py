@@ -177,6 +177,7 @@ class LevelMap:
             for tile in line:
                 if tile == "f":
                     fire = Fire(xpos, ypos, PATH_IMAGES + "fire.png")
+                    print("fire ", xpos, " ", ypos)
                     self.firegroup.add(fire)
                 xpos = xpos + size[0]
             ypos = ypos + size[1]
@@ -824,8 +825,8 @@ class Monster(AnimatedSprite):
         AnimatedSprite.__init__(self) #call Sprite initialize
         
         # Init monster move direction
-        self.xpos = xpos;
-        self.ypos = ypos;
+        self.xpos = xpos
+        self.ypos = ypos
         self.xmove = 0.4
         
         # Images and start image and first animation frame
@@ -921,7 +922,8 @@ class ForbiddenCave:
        # Level maps
        self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                      PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       
+       #self.maps = [PATH_MAPS + "level8.txt"]
+
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
        self.jumpSound = self.loadSound(PATH_SOUND + "jump.wav")  
@@ -1016,8 +1018,8 @@ class ForbiddenCave:
             xpos = background.get_width()/2 - textpos.width/2
         cleanrec=(xpos-1, ypos-1, textpos.width+1+rightpad, textpos.height)
         if bgcolor!=None:
-            background.fill(bgcolor, cleanrec);
-        background.blit(text, (xpos, ypos));    
+            background.fill(bgcolor, cleanrec)
+        background.blit(text, (xpos, ypos))  
     
    # Show welcome screen
    def doWelcomeLoop(self):
@@ -1035,7 +1037,6 @@ class ForbiddenCave:
         self.addText("Press space to jump.", background, 0, 340, (255,193,37), THECOLORS['black'], 25, True)
         self.addText("Highscore: " + str(self.highscore), background, 0, 400, THECOLORS["cyan"], THECOLORS['black'], 30, True)
         self.addText("Press space to start game  ", background, 0, 500, (255,48,48), THECOLORS['black'], 40, True)
-      
         
         # Repeat until space or quit pressed
         while True:    
@@ -1197,7 +1198,7 @@ class ForbiddenCave:
                        self.bonus -= 100
                        self.lastBonusDecTime = time  
                if self.bonus == 0:   
-                   loopstate = 0 # Life lost           
+                   loopstate = 0 # Life lost        
     
                ##################################################
                ### Handle input events
