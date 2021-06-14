@@ -17,17 +17,26 @@ class PlayerAI:
             player.xmove = random.randint(-1, 1)
 
     def findGem(self, gemGroup):
+        if(len(gemGroup) < 1):
+            return []
+
         # Foe all gems calculate aStar
         playerPos = (self.player.rect.centerx, self.player.rect.centery)
-        bool = True
 
+        paths = []
         for gem in gemGroup:
-            if bool:
-                goal = (gem.rect.x, gem.rect.y)
-                path = aStar(playerPos, goal, self.map, self.screen)
-                bool = False
+            goal = (gem.rect.x, gem.rect.y)
+            path = aStar(playerPos, goal, self.map)
+            paths.append(path)
 
-            #print(gem.rect.x, gem.rect.y)
+        closestGemPath = paths[0]
+        for path in paths:
+            if len(path) < len(closestGemPath):
+                closestGemPath = path
+
+        drawPath(closestGemPath, self.screen)
+
+        return closestGemPath
 
 
 # Node for aStar
@@ -44,7 +53,7 @@ class Node():
         return "( " + str(self.point) + " -> " + str(self.heuristicCost) + " )"
 
 # Calculates the best path between two points using an version of the A * algorithm
-def aStar(point, goal, textmap, screen):
+def aStar(point, goal, textmap):
     priorityQueue = []
     visited = []
     path = []
@@ -73,7 +82,7 @@ def aStar(point, goal, textmap, screen):
         currentTile = node.point
 
         ## Path discovery visualization
-        drawCircle(currentTile, screen)
+        #drawCircle(currentTile, screen)
         ###
 
         if currentTile == goal:
@@ -82,7 +91,7 @@ def aStar(point, goal, textmap, screen):
             step = node
             while step:
                 # Build path
-                path.append(step.point)
+                path.append(map_to_screen(step.point))
                 step = step.parent
 
         ## check neighbors
@@ -118,7 +127,6 @@ def onMap(point, textmap):
     width =  len(textmap[0])
     height = len(textmap)
     return x > 0 and x < width and y > 0 and y < height
-
 
 def isWall(point, textmap):
     x, y = point
@@ -187,9 +195,13 @@ def sortQueue(queue):
 
 clock = pygame.time.Clock()
 
+def drawPath(path, screen):
+    for node in path:
+        drawCircle(node, screen)
+
 # Auxiliary function to draw a circle o the node being visited
-def drawCircle(hex, screen, color = (255,255,255)):
-    (x,y) = map_to_screen((hex))
+def drawCircle(point, screen, color = (255,255,255)):
+    (x,y) = point
     (x,y) = (x+20, y+20) # center
     pygame.draw.circle(screen, color,(x,y),5,0)
     pygame.display.flip()
