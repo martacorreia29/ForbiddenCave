@@ -34,7 +34,7 @@ class PlayerAI:
                 gemsDistances.update({distance:gem})            
             closestGems = [gemsDistances[k] for k in sorted(list(gemsDistances.keys()))[:4]]
 
-        # Foe all gems calculate aStar
+        # for all gems, calculate aStar
         paths = []
         for gem in closestGems:
             goal = (gem.rect.x, gem.rect.y)
@@ -49,7 +49,6 @@ class PlayerAI:
                 closestGemPath = path
                 closestAlpha = alpha
 
-        #print(closestGemPath.cost)
         drawPath(closestGemPath, self.screen)
 
         return closestGemPath
@@ -130,7 +129,7 @@ def aStar(point, goal, textmap, screen, costMap):
                 h = heuristic(nbr, goal)
 
                 # get cost
-                c = node.cost + calcTileCost(nbr, textmap, screen)#TODO: We could add a cost to each tile
+                c = node.cost + calcTileCost(currentTile, nbr, textmap, screen)#TODO: We could add a cost to each tile
 
                 nbrNode = Node(nbr, node, c, h + c)
                 c += costMap[nbr[1]][nbr[0]]
@@ -151,7 +150,8 @@ def aStar(point, goal, textmap, screen, costMap):
         visited.append(node.point)   
     return path
 
-def calcTileCost(point, textmap, screen):
+def calcTileCost(currentTile, point, textmap, screen):
+    cx, cy = currentTile
     x, y = point
     c = textmap[y][x]
     cost = 0
@@ -162,26 +162,35 @@ def calcTileCost(point, textmap, screen):
                 temp = textmap[y+i+1][x] == 'a' or textmap[y+i+1][x] == 'b' or textmap[y+i+1][x] == 'l'
                 hasFloor = hasFloor or temp
             
-        hasPlatform = False 
-        for i in range(-2,3):
-            if i != 0:
+        hasPlatform = False
+        #if cx > x:
+        for i in range(-2,0):
+            for j in range(1, 3):
+                a = x + i
+                b = y - j
+
+                if onMap((a,b), textmap) and textmap[b][a] == 'a':
+                    hasPlatform = True
+        '''else: 
+            for i in range(1, 3):
                 for j in range(1, 3):
                     a = x + i
                     b = y - j
-                    if onMap((a,b), textmap) and textmap[b][a] == 'a':
-                        hasPlatform = True
 
-        idk = False
+                    if onMap((a,b), textmap) and textmap[b][a] == 'a':
+                        hasPlatform = True'''
         
         if hasFloor: 
             cost = 0
         # _ _
         elif ((onMap((x-1,y+1), textmap) and textmap[y+1][x-1] == 'a') or (onMap((x+1,y+1), textmap) and textmap[y+1][x+1] == 'a')):
             cost = 0
+
         elif hasPlatform:
-            cost = 20
+            cost = 40#20
         else: 
             cost = 999
+        #print (cost)
     return cost 
     
 def onMap(point, textmap):
