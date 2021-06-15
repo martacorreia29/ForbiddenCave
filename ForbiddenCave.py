@@ -1,5 +1,6 @@
 #Import Modules
 import os, pygame, random
+from pygame import draw
 import pygame.gfxdraw
 import pygame.surface
 import pygame.color
@@ -972,7 +973,7 @@ class ForbiddenCave:
        # Level maps
        #self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                     #PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       self.maps = [PATH_MAPS + "level2.txt"]
+       self.maps = [PATH_MAPS + "level3.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1030,8 +1031,9 @@ class ForbiddenCave:
                self.totallevelcnt += 1
                if self.levelcnt >= len(self.maps):
                    self.levelcnt = 0
-                   self.beginbonus -= 500           
-               self.map = LevelMap(PATH_IMAGES + "wall.png", PATH_IMAGES + "wall1.png", PATH_IMAGES + "wall2.png", self.maps[self.levelcnt], self.yoff)           
+                   self.beginbonus -= 500   
+
+               self.map = LevelMap(PATH_IMAGES + "wall.png", PATH_IMAGES + "wall1.png", PATH_IMAGES + "wall2.png", self.maps[self.levelcnt], self.yoff) 
                self.costs = costs(self.map.textmap)
 
                # Process game
@@ -1055,6 +1057,44 @@ class ForbiddenCave:
            # Game over!
            if result == self.GAMESTATE_DEAD:
                self.doGameOverLoop()
+
+   def addXs(self, textmap, levelcnt):
+       newTextMap = [[0]*len(textmap[0]) for i in range(len(textmap))]
+       i = -1
+       j = -1
+       for column in textmap:
+        j += 1
+        i = -1
+        for row in column:
+            i += 1
+            newTextMap[j][i] = textmap[j][i]
+
+            if row == '.' and (self.isWall((i+1, j), textmap) or self.isWall((i-1, j), textmap)) and (not self.isFloor((i, j+1), textmap) and not self.isFloor((i, j+2), textmap)):
+                newTextMap[j][i] = 'x'
+                PlayerAI.drawCircle(PlayerAI.map_to_screen((i, j)), self.screen, color = (255,0,0))
+
+        if levelcnt == 3:
+            newTextMap[9][5] = 'x'
+            newTextMap[4][23] = 'x'
+            PlayerAI.drawCircle(PlayerAI.map_to_screen((5, 9)), self.screen, color = (255,0,0))
+       
+       return newTextMap
+
+   def isWall(self, point, textmap):
+        x, y = point
+        if PlayerAI.onMap(point, textmap):
+            c = textmap[y][x]
+            return c == 'b' or c == 'a'
+        else:
+            return False
+
+   def isFloor(self, point, textmap):
+        x, y = point
+        if PlayerAI.onMap(point, textmap):
+            c = textmap[y][x]
+            return c == 'b' or c == 'a' or c == 'l'
+        else:
+            return False
     
    # Add text to provided background
    def addText(self, text, background, xpos, ypos, \
@@ -1305,7 +1345,7 @@ class ForbiddenCave:
 
                # Player AI
                if not player.ai:
-                    player.ai = PlayerAI.PlayerAI(player, self.map.textmap, self.screen, self.costs)
+                    player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, 3), self.screen, self.costs)
                self.frameCounter += 1
                if self.frameCounter == UPDATE_AI_FRAME:
                 player.ai.findGem(gemgroup, doorgroup)

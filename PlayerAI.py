@@ -171,25 +171,27 @@ def calcTileCost(currentTile, point, textmap, screen):
         for i in range(3):
             if onMap((x,y+i+1) , textmap):
                 temp = textmap[y+i+1][x] == 'a' or textmap[y+i+1][x] == 'b' or textmap[y+i+1][x] == 'l'
+                if cy > y:
+                    temp = temp or textmap[y+i+1][x] == 'x'
                 hasFloor = hasFloor or temp
             
         hasPlatform = False
-        #if cx > x:
-        for i in range(-2,0):
-            for j in range(1, 3):
-                a = x + i
-                b = y - j
+        if cx >= x:
+            for i in range(-2,0):
+                for j in range(1, 3):
+                    a = x + i
+                    b = y - j
 
-                if onMap((a,b), textmap) and textmap[b][a] == 'a':
-                    hasPlatform = True
-        '''else: 
+                    if onMap((a,b), textmap) and textmap[b][a] == 'a':
+                        hasPlatform = True
+        else: 
             for i in range(1, 3):
                 for j in range(1, 3):
                     a = x + i
                     b = y - j
 
                     if onMap((a,b), textmap) and textmap[b][a] == 'a':
-                        hasPlatform = True'''
+                        hasPlatform = True
         
         if hasFloor: 
             cost = 0
@@ -198,7 +200,7 @@ def calcTileCost(currentTile, point, textmap, screen):
             cost = 0
 
         elif hasPlatform:
-            cost = 40#20
+            cost = 40
         else: 
             cost = 999
         #print (cost)
@@ -213,7 +215,7 @@ def onMap(point, textmap):
 def isWall(point, textmap):
     x, y = point
     c = textmap[y][x]
-    return c == 'b' or c == 'a' or c == 'f' #or c == 'O' or c == 'm' or c == 'V'
+    return c == 'b' or c == 'a' or c == 'f' or c == 'x' or c == 'o' #or c == 'O' or c == 'm' or c == 'V'
 
 def neighbor(point, theta):
     (x,y) = point
@@ -294,4 +296,4 @@ def drawCircle(point, screen, color = (255,255,255)):
     (x,y) = (x+20, y+20) # center
     pygame.draw.circle(screen, color,(x,y),5,0)
     pygame.display.flip()
-    #clock.tick(3)
+    #clock.tick(13)
