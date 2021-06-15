@@ -972,7 +972,7 @@ class ForbiddenCave:
        # Level maps
        #self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                     #PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       self.maps = [PATH_MAPS + "level3.txt"]
+       self.maps = [PATH_MAPS + "level1.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1221,6 +1221,7 @@ class ForbiddenCave:
        self.screen.blit(self.background, (0, 0))
        pygame.display.flip()
      
+     
        ##################################################
        ### Main loop
        ##################################################
@@ -1307,7 +1308,7 @@ class ForbiddenCave:
                     player.ai = PlayerAI.PlayerAI(player, self.map.textmap, self.screen, self.costs)
                self.frameCounter += 1
                if self.frameCounter == UPDATE_AI_FRAME:
-                player.ai.findGem(gemgroup)
+                player.ai.findGem(gemgroup, doorgroup)
                 self.frameCounter = 0
          
 

@@ -18,9 +18,9 @@ class PlayerAI:
         else:
             player.xmove = random.randint(-1, 1)
 
-    def findGem(self, gemGroup):
+    def findGem(self, gemGroup,doorGroup):
         if(len(gemGroup) < 1):
-            return []
+            return self.findDoor(doorGroup);
         
         playerPos = (self.player.rect.centerx, self.player.rect.centery)
         closestGems = gemGroup
@@ -33,9 +33,8 @@ class PlayerAI:
                 distance = distance_euclidian_onScreen(playerPos, goal)
                 gemsDistances.update({distance:gem})            
             closestGems = [gemsDistances[k] for k in sorted(list(gemsDistances.keys()))[:4]]
-
-        # Foe all gems calculate aStar
         paths = []
+        # Foe all gems calculate aStar
         for gem in closestGems:
             goal = (gem.rect.x, gem.rect.y)
             path = aStar(playerPos, goal, self.map, self.screen, self.costMap)
@@ -54,6 +53,18 @@ class PlayerAI:
 
         return closestGemPath
 
+    def findDoor(self, doorGroup):
+        
+        playerPos = (self.player.rect.centerx, self.player.rect.centery)
+        # Calculate the best path for the door
+        door = list(doorGroup)[0]
+        goal = (door.rect.x, door.rect.y)
+        path = aStar(playerPos, goal, self.map, self.screen, self.costMap)
+        
+        #print(closestGemPath.cost)
+        drawPath(path, self.screen)
+        return path
+        
 ## A* algorithm ##
 
 class Path():
