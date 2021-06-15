@@ -1221,6 +1221,7 @@ class ForbiddenCave:
        self.screen.blit(self.background, (0, 0))
        pygame.display.flip()
      
+     
        ##################################################
        ### Main loop
        ##################################################
@@ -1307,7 +1308,7 @@ class ForbiddenCave:
                     player.ai = PlayerAI.PlayerAI(player, self.map.textmap, self.screen, self.costs)
                self.frameCounter += 1
                if self.frameCounter == UPDATE_AI_FRAME:
-                player.ai.findGem(gemgroup)
+                player.ai.findGem(gemgroup, doorgroup)
                 self.frameCounter = 0
          
 
