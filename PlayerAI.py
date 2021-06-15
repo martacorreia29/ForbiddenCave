@@ -11,7 +11,7 @@ class PlayerAI:
         self.screen = screen
         self.costMap = costs
         
-    def random():
+    def random(self):
         action = random.randint(0, 10)
         if(action > 8):
             player.jump = random.randint(-5, 5)
@@ -101,9 +101,9 @@ def aStar(point, goal, textmap, screen, costMap):
     goal = screen_to_map(goal)
 
     h = heuristic(point, goal)
-    starNode = Node(point, None, 0, h)
+    startNode = Node(point, None, 0, h)
     # place the start node on the queue
-    priorityQueue.append(starNode)
+    priorityQueue.append(startNode)
 
     while(len(priorityQueue) > 0 and searching):
         # sort queue by heuristic cost
@@ -128,8 +128,7 @@ def aStar(point, goal, textmap, screen, costMap):
                 nodes.append(map_to_screen(step.point))
                 totalCost += step.cost
                 step = step.parent
-            path = Path(nodes, len(nodes),  totalCost)
-            
+            path = Path(nodes, len(nodes), totalCost)            
 
         # check neighbors
         for hdg in range(4):
