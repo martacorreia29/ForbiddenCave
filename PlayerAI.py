@@ -151,10 +151,7 @@ def aStar(point, goal, textmap, screen, costMap):
         visited.append(node.point)   
     return path
 
-idk = True
-
 def calcTileCost(point, textmap, screen):
-    global idk
     x, y = point
     c = textmap[y][x]
     cost = 0
@@ -171,9 +168,6 @@ def calcTileCost(point, textmap, screen):
                 for j in range(1, 3):
                     a = x + i
                     b = y - j
-                    if idk:
-                        drawCircle(map_to_screen((a,b)), screen, (255,0,0))
-
                     if onMap((a,b), textmap) and textmap[b][a] == 'a':
                         hasPlatform = True
 
@@ -185,11 +179,9 @@ def calcTileCost(point, textmap, screen):
         elif ((onMap((x-1,y+1), textmap) and textmap[y+1][x-1] == 'a') or (onMap((x+1,y+1), textmap) and textmap[y+1][x+1] == 'a')):
             cost = 0
         elif hasPlatform:
-            #drawCircle(map_to_screen(point), screen, (255,0,0))
             cost = 20
         else: 
             cost = 999
-        #print (cost)
     return cost 
     
 def onMap(point, textmap):
@@ -282,4 +274,4 @@ def drawCircle(point, screen, color = (255,255,255)):
     (x,y) = (x+20, y+20) # center
     pygame.draw.circle(screen, color,(x,y),5,0)
     pygame.display.flip()
-    clock.tick(3)
+    #clock.tick(3)
