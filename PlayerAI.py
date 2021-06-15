@@ -51,6 +51,7 @@ class PlayerAI:
         drawPath(closestGemPath, self.screen)
 
         return closestGemPath
+                    
 
     def findDoor(self, doorGroup):
         
@@ -63,6 +64,41 @@ class PlayerAI:
         #print(closestGemPath.cost)
         drawPath(path, self.screen)
         return path
+
+    def iaMoving(self,path):
+        nextMove = path.nodes[len(path.nodes) -2]
+        playerPos = (self.player.rect.centerx, self.player.rect.centery)
+        print(playerPos, " ->" , nextMove)        
+        nextMove = (nextMove[0] +20 , nextMove[1] + 20)
+
+        if playerPos[1] > nextMove[1] :
+            if (self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True:
+                #self.jumpSound.play()
+                self.player.jump = -5.2
+                self.player.climbMove = 0
+                self.player.doClimb = False
+                self.player.doElevator = False
+                self.player.elevator = None
+                print("salto")
+                #TODO USAR SENSORES EM VEZ DO PONTOS
+        if playerPos[0] > nextMove[0]:
+            self.player.xmove = -1
+            print("esquerda")
+        if playerPos[0] < nextMove[0]  :
+            self.player.xmove = 1
+            print("direita")
+        if playerPos[1] < nextMove[1] :
+            if self.player.canClimb:
+                self.player.doClimb = True
+                self.player.climbMove = 1 
+                print("descer")
+        if playerPos[1] < nextMove[1]:
+            if self.player.canClimb:
+                self.player.doClimb = True
+                self.player.climbMove = -1
+                print("subir")
+
+          
         
 ## A* algorithm ##
 
