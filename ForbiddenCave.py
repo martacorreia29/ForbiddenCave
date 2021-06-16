@@ -1343,9 +1343,12 @@ class ForbiddenCave:
                playergroup.update()
                firegroup.update()
 
-               # Player AI
+               ##################################################
+               ### Player AI
+               ##################################################
                if not player.ai:
-                    player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, self.levelcnt), self.screen, self.costs)
+                    player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, 3), self.screen, self.costs)
+
                self.frameCounter += 1
                if self.frameCounter == UPDATE_AI_FRAME:
                 player.ai.iaMoving(player.ai.findGem(gemgroup, doorgroup))
@@ -1353,7 +1356,7 @@ class ForbiddenCave:
          
 
                ##################################################
-               ### print( game state
+               ### Print game state
                ################################################## 
                
                self.addText("Bonus: " + str(self.bonus), self.background, 10, 5, THECOLORS['lightblue'], THECOLORS['black'], 22, False, 30)
@@ -1405,14 +1408,14 @@ class ForbiddenCave:
                collgroup = pygame.sprite.spritecollide(player, firegroup, 0)
                pixelgroup = pygame.sprite.spritecollide(player, collgroup, 0, pygame.sprite.collide_mask)
                if len(pixelgroup):
-                   print( "fire collision")
+                   print("fire collision")
                    loopstate = 0
                
                # Check player with bat collisions          
                collgroup = pygame.sprite.spritecollide(player, batgroup, 0)
                pixelgroup = pygame.sprite.spritecollide(player, collgroup, 0, pygame.sprite.collide_mask)
                if len(pixelgroup):
-                   print( "bat collision")
+                   print("bat collision")
                    loopstate = 0
                
                # Check player with door collisions
