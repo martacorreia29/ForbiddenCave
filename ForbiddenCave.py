@@ -973,7 +973,7 @@ class ForbiddenCave:
        # Level maps
        #self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                     #PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       self.maps = [PATH_MAPS + "level3.txt"]
+       self.maps = [PATH_MAPS + "level1.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1351,7 +1351,7 @@ class ForbiddenCave:
 
                self.frameCounter += 1
                if self.frameCounter == UPDATE_AI_FRAME:
-                player.ai.findGem(gemgroup, doorgroup)
+                player.ai.iaMoving(player.ai.findGem(gemgroup, doorgroup))
                 self.frameCounter = 0
          
 
@@ -1408,14 +1408,14 @@ class ForbiddenCave:
                collgroup = pygame.sprite.spritecollide(player, firegroup, 0)
                pixelgroup = pygame.sprite.spritecollide(player, collgroup, 0, pygame.sprite.collide_mask)
                if len(pixelgroup):
-                   print( "fire collision")
+                   print("fire collision")
                    loopstate = 0
                
                # Check player with bat collisions          
                collgroup = pygame.sprite.spritecollide(player, batgroup, 0)
                pixelgroup = pygame.sprite.spritecollide(player, collgroup, 0, pygame.sprite.collide_mask)
                if len(pixelgroup):
-                   print( "bat collision")
+                   print("bat collision")
                    loopstate = 0
                
                # Check player with door collisions
