@@ -67,21 +67,58 @@ class PlayerAI:
 
     def iaMoving(self,path):       
         nextMove = path.nodes[len(path.nodes)-2]
-        nextNextMove = path.nodes[len(path.nodes)-3]
+        #currentMove = path.nodes[len(path.nodes)-1]
+        # center player
+        #self.player.rect.centerx = path.nodes[len(path.nodes)-1][0] + 20
+        #self.player.rect.centery = path.nodes[len(path.nodes)-1][1] + 20
+
+        
+        #nextNextMove = path.nodes[len(path.nodes)-3]
         playerPos = (self.player.rect.x, self.player.rect.y)
+        
+        # x, y = screen_to_map(currentMove)
+        # xx, yy = screen_to_map(nextMove)
+        # print(x, y)
+        # drawCircle(currentMove, self.screen, (0, 0, 255))
+        # if (onMap((x,y), self.map) and self.map[int(y)][int(x)] == 'l'):
+        #     print("######### start ladder state")
+        #     # start ladder state
+        #     direction = "up"
+        #     if(playerPos[1] - nextMove[1] < 0): 
+        #         direction = "down"
+            
+        #     # center 
+        #     self.player.rect.x = nextMove[0]
+        #     self.player.rect.y = nextMove[1]
+        #     #playerPos = nextMove
 
-        differenceX = abs(playerPos[0] - nextMove[0])/40
-        differenceY = abs(playerPos[1] - nextMove[1])/40
+        #     print(playerPos)
 
-        differenceXX = abs(playerPos[0] - nextNextMove[0])/40
-        differenceYY = abs(playerPos[1] - nextNextMove[1])/40
+        #     if direction == "down" :
+        #         if self.player.canClimb:
+        #             self.player.doClimb = True
+        #             self.player.climbMove = 1 #(nextMove[1] - playerPos[1])/20
+        #             print("descer escada")
+        #     else:
+        #         if self.player.canClimb:
+        #             self.player.doClimb = True
+        #             self.player.climbMove = -1 #(playerPos[1] - nextMove[1])/20
+        #             print("escalar")
+        #     return 
 
-        x, y = screen_to_map(nextMove)
-        xx, yy = screen_to_map(nextNextMove)
 
-        if (differenceX < 1 and differenceY < 1) or ((onMap((x,y), self.map) and self.map[int(y)][int(x)] != 'l' and differenceX < 1 \
-            and onMap((xx,yy), self.map) and self.map[int(yy)][int(xx)] != 'l')):
-            nextMove = path.nodes[len(path.nodes)-3]
+        #differenceX = abs(playerPos[0] - nextMove[0])/40
+        #differenceY = abs(playerPos[1] - nextMove[1])/40
+
+        #differenceXX = abs(playerPos[0] - nextNextMove[0])/40
+        #differenceYY = abs(playerPos[1] - nextNextMove[1])/40
+
+        # x, y = screen_to_map(nextMove)
+        # xx, yy = screen_to_map(nextNextMove)
+
+        # if (differenceX < 1 and differenceY < 1) or ((onMap((x,y), self.map) and self.map[int(y)][int(x)] != 'l' and differenceX < 1 \
+        #     and onMap((xx,yy), self.map) and self.map[int(yy)][int(xx)] != 'l')):
+        #     nextMove = path.nodes[len(path.nodes)-3]
 
         #print(playerPos, " ->" , nextMove)        
         nextMove = (nextMove[0], nextMove[1])
@@ -94,13 +131,15 @@ class PlayerAI:
                 self.player.doClimb = False
                 self.player.doElevator = False
                 self.player.elevator = None
+                #self.player.xmove = 0
+
                 print("salto")
                 
         elif playerPos[0] > nextMove[0]: # left
-            self.player.xmove = -(playerPos[0] - nextMove[0])/40
+            self.player.xmove = -1 #-(playerPos[0] - nextMove[0])/40
     
         elif playerPos[0] < nextMove[0]: # right
-            self.player.xmove = (nextMove[0] - playerPos[0])/40
+            self.player.xmove = 1 #(nextMove[0] - playerPos[0])/40
             print("direita")
             
         if playerPos[1] < nextMove[1] :
@@ -109,7 +148,7 @@ class PlayerAI:
                 self.player.climbMove = 1 #(nextMove[1] - playerPos[1])/20
                 print("descer escada")
 
-        if playerPos[1] < nextMove[1]:
+        if playerPos[1] > nextMove[1]:
             if self.player.canClimb:
                 self.player.doClimb = True
                 self.player.climbMove = -1 #(playerPos[1] - nextMove[1])/20
@@ -119,8 +158,10 @@ class PlayerAI:
     def sameSquare(self, currentPos, nextMovePos):
         return screen_to_map(currentPos) == screen_to_map(nextMovePos)           
 
-## A* algorithm ##
 
+##################
+## A* algorithm ##
+##################
 class Path():
     def __init__(self, nodes, size, cost):
         self.size = size
@@ -248,7 +289,7 @@ def calcTileCost(currentTile, point, textmap, screen):
                         hasPlatform = True
         
         if hasFloor: 
-            cost = 0
+            cost = 99
         # _ _
         elif ((onMap((x-1,y+1), textmap) and textmap[y+1][x-1] == 'a') or (onMap((x+1,y+1), textmap) and textmap[y+1][x+1] == 'a')):
             cost = 0
@@ -350,4 +391,4 @@ def drawCircle(point, screen, color = (255,255,255)):
     (x,y) = (x+20, y+20) # center
     pygame.draw.circle(screen, color,(x,y),5,0)
     pygame.display.flip()
-    #clock.tick(13)
+    #clock.tick(3)

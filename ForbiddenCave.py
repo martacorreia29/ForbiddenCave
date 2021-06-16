@@ -12,7 +12,7 @@ PATH_IMAGES = "./images/"
 PATH_SOUND = "./sound/"
 PATH_MAPS = "./maps/"
 
-UPDATE_AI_FRAME = 20
+UPDATE_AI_FRAME = 10
 
 # Map of level player is moving in
 class LevelMap:
@@ -1073,6 +1073,10 @@ class ForbiddenCave:
                 newTextMap[j][i] = 'x'
                 PlayerAI.drawCircle(PlayerAI.map_to_screen((i, j)), self.screen, color = (255,0,0))
 
+            if row == '.' and (self.isWall((i, j-1), textmap) or self.isWall((i, j-1), textmap)) and (not self.isFloor((i, j+1), textmap) and not self.isFloor((i, j+2), textmap)):
+                newTextMap[j][i] = 'x'
+                PlayerAI.drawCircle(PlayerAI.map_to_screen((i, j)), self.screen, color = (255,0,0))
+
         if levelcnt == 3:
             newTextMap[9][5] = 'x'
             newTextMap[4][23] = 'x'
@@ -1347,7 +1351,7 @@ class ForbiddenCave:
                ### Player AI
                ##################################################
                if not player.ai:
-                    player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, 3), self.screen, self.costs)
+                    player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, self.levelcnt), self.screen, self.costs)
 
                self.frameCounter += 1
                if self.frameCounter == UPDATE_AI_FRAME:
