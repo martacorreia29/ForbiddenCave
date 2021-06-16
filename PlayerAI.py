@@ -66,10 +66,26 @@ class PlayerAI:
         return path
 
     def iaMoving(self,path):
-        nextMove = path.nodes[len(path.nodes) -2]
-        playerPos = (self.player.rect.centerx, self.player.rect.centery)
-        print(playerPos, " ->" , nextMove)        
-        nextMove = (nextMove[0] +20 , nextMove[1] + 20)
+        
+        nextMove = path.nodes[len(path.nodes)-2]
+        nextNextMove = path.nodes[len(path.nodes)-3]
+        playerPos = (self.player.rect.x, self.player.rect.y)
+
+        differenceX = abs(playerPos[0] - nextMove[0])/40
+        differenceY = abs(playerPos[1] - nextMove[1])/40
+
+        differenceXX = abs(playerPos[0] - nextNextMove[0])/40
+        differenceYY = abs(playerPos[1] - nextNextMove[1])/40
+
+        x, y = screen_to_map(nextMove)
+        xx, yy = screen_to_map(nextNextMove)
+
+        if (differenceX < 1 and differenceY < 1) or ((onMap((x,y), self.map) and self.map[int(y)][int(x)] != 'l' and differenceX < 1 \
+            and onMap((xx,yy), self.map) and self.map[int(yy)][int(xx)] != 'l')):
+            nextMove = path.nodes[len(path.nodes)-3]
+
+        #print(playerPos, " ->" , nextMove)        
+        nextMove = (nextMove[0], nextMove[1])
 
         if playerPos[1] > nextMove[1] :
             if (self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True:
@@ -80,26 +96,30 @@ class PlayerAI:
                 self.player.doElevator = False
                 self.player.elevator = None
                 print("salto")
-                #TODO USAR SENSORES EM VEZ DO PONTOS
-        if playerPos[0] > nextMove[0]:
-            self.player.xmove = -1
-            print("esquerda")
-        if playerPos[0] < nextMove[0]  :
-            self.player.xmove = 1
+                
+        elif playerPos[0] > nextMove[0]: # left
+            self.player.xmove = -(playerPos[0] - nextMove[0])/40
+    
+        elif playerPos[0] < nextMove[0]: # right
+            self.player.xmove = (nextMove[0] - playerPos[0])/40
             print("direita")
+            
         if playerPos[1] < nextMove[1] :
             if self.player.canClimb:
                 self.player.doClimb = True
-                self.player.climbMove = 1 
-                print("descer")
+                self.player.climbMove = 1 #(nextMove[1] - playerPos[1])/20
+                print("descer escada")
+
         if playerPos[1] < nextMove[1]:
             if self.player.canClimb:
                 self.player.doClimb = True
-                self.player.climbMove = -1
-                print("subir")
+                self.player.climbMove = -1 #(playerPos[1] - nextMove[1])/20
+                print("escalar")
 
           
-        
+    def sameSquare(self, currentPos, nextMovePos):
+        return screen_to_map(currentPos) == screen_to_map(nextMovePos)           
+
 ## A* algorithm ##
 
 class Path():
