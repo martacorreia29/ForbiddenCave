@@ -11,6 +11,9 @@ class PlayerAI:
         self.screen = screen
         self.costMap = costs
         
+        #self.jumpRect = pygame.Rect(player.rect.x-20, player.rect.y, 80, 40)
+
+        
     def random():
         action = random.randint(0, 10)
         if(action > 8):
@@ -20,7 +23,7 @@ class PlayerAI:
 
     def findGem(self, gemGroup,doorGroup):
         if(len(gemGroup) < 1):
-            return self.findDoor(doorGroup);
+            return self.findDoor(doorGroup)
         
         playerPos = (self.player.rect.centerx, self.player.rect.centery)
         closestGems = gemGroup
@@ -68,8 +71,9 @@ class PlayerAI:
     def iaMoving(self,path):
         nextMove = path.nodes[len(path.nodes) -2]
         playerPos = (self.player.rect.centerx, self.player.rect.centery)
+
         print(playerPos, " ->" , nextMove)        
-        nextMove = (nextMove[0] +20 , nextMove[1] + 20)
+        nextMove = (nextMove[0] + 20, nextMove[1] + 20)
 
         if playerPos[1] > nextMove[1] :
             if (self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True:
@@ -81,10 +85,10 @@ class PlayerAI:
                 self.player.elevator = None
                 print("salto")
                 #TODO USAR SENSORES EM VEZ DO PONTOS
-        if playerPos[0] > nextMove[0]:
+        elif playerPos[0] > nextMove[0]:
             self.player.xmove = -1
             print("esquerda")
-        if playerPos[0] < nextMove[0]  :
+        elif playerPos[0] < nextMove[0] :
             self.player.xmove = 1
             print("direita")
         if playerPos[1] < nextMove[1] :
@@ -98,7 +102,8 @@ class PlayerAI:
                 self.player.climbMove = -1
                 print("subir")
 
-          
+
+
         
 ## A* algorithm ##
 
