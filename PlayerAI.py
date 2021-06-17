@@ -104,7 +104,10 @@ class PlayerAI:
 
         
         #nextNextMove = path.nodes[len(path.nodes)-3]
-        playerPos = (self.player.rect.x, self.player.rect.y)
+        n = 0 # change for test??
+        playerPos = (self.player.rect.x , self.player.rect.y) 
+        playerPosJump = playerPos if nextMove[0] > playerPos[0]  else (self.player.rect.x + n, self.player.rect.y)
+        
 
         # x, y = screen_to_map(currentMove)
         # xx, yy = screen_to_map(nextMove)
@@ -115,14 +118,16 @@ class PlayerAI:
         index = len(path.nodes)-2
         x, y = screen_to_map(nextMove)
         xP, yP = screen_to_map(playerPos)
+        xPJ, yPJ = screen_to_map(playerPosJump)
+
 
         if (onMap((x,y+1), self.map) and (self.map[int(y+1)][int(x)] == '.' or self.map[int(y+1)][int(x)] == 'x') \
-                    and  (onMap((xP,yP+1), self.map) and self.isFloor((xP,yP+1),self.map))):
+                    and  (onMap((xPJ,yPJ+1), self.map) and self.isFloor((xPJ,yPJ+1),self.map))):
             while index >  0:
                 nextMove1 = path.nodes[index]
                 xx, yy = screen_to_map(nextMove1)
-                if self.map[int(yy+1)][int(xx)] == 'a' and 4 > abs(xx - xP) and (yy == yP or yy + 1 == yP or yy -1 == yP):
-                    if yy + 1 == yP :
+                if self.map[int(yy+1)][int(xx)] == 'a' and 4 > abs(xx - xPJ) and (yy == yPJ or yy + 1 == yPJ or yy -1 == yPJ):
+                    if yy + 1 == yPJ :
                         self.player.update_ia_frame = 40
                       
                     self.state = State.JUMPING
@@ -132,7 +137,7 @@ class PlayerAI:
                     #Maybe this is bad
                     print("#########################State change to jumping#########################")
                     return 
-                if xx >= xP + 3:
+                if xx >= xPJ + 3:
                     break
                 index -= 1
         
