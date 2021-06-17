@@ -1,6 +1,7 @@
 #Import Modules
 import os, pygame, random
 from pygame import draw
+from pygame.display import update
 import pygame.gfxdraw
 import pygame.surface
 import pygame.color
@@ -12,7 +13,7 @@ PATH_IMAGES = "./images/"
 PATH_SOUND = "./sound/"
 PATH_MAPS = "./maps/"
 
-UPDATE_AI_FRAME = 10
+update_ai_frame = 10
 
 # Map of level player is moving in
 class LevelMap:
@@ -363,6 +364,7 @@ class Player(AnimatedSprite):
         self.xmove = 0
         self.ymove = 0
         self.jump = 0
+        self.update_ia_frame = 10
         
         # Images and start image and first animation frame
         self.imageleft = self.sliceImage(40, 40, playerleft)
@@ -396,22 +398,22 @@ class Player(AnimatedSprite):
 
         #TODO: remove if not needed
         # sensors 
-        # self.sensorImg = PATH_IMAGES + "point.png" 
-        # self.leftSensor = None
-        # self.rightSensor = None
-        # self.downLeftSensor = None
-        # self.downRightSensor = None
+        self.sensorImg = PATH_IMAGES + "point.png" 
+        self.leftSensor = None
+        self.rightSensor = None
+        self.downLeftSensor = None
+        self.downRightSensor = None
         # self.leftLongDistanceSensor = None
         # self.rightLongDistanceSensor = None
         # self.topLeftSensor = None
         # self.topRightSensor = None
 
            
-    # def refresh_sensors(self, screen, display):
-    #     self.leftSensor = (self.rect.centerx - self.rect.width , self.rect.centery)
-    #     self.rightSensor = (self.rect.centerx  + self.rect.width , self.rect.centery)
-    #     self.downLeftSensor = (self.rect.centerx - self.rect.width , self.rect.centery + self.rect.height -10)
-    #     self.downRightSensor = (self.rect.centerx + self.rect.width , self.rect.centery + self.rect.height -10)
+    def refresh_sensors(self, screen, display):
+        self.leftSensor = (self.rect.centerx - self.rect.width , self.rect.centery)
+        self.rightSensor = (self.rect.centerx  + self.rect.width , self.rect.centery)
+        self.downLeftSensor = (self.rect.centerx - self.rect.width , self.rect.centery + self.rect.height -10)
+        self.downRightSensor = (self.rect.centerx + self.rect.width , self.rect.centery + self.rect.height -10)
     #     #self.leftLongDistanceSensor = (self.rect.centerx - self.rect.width * 2, self.rect.centery)
     #     #self.rightLongDistanceSensor = (self.rect.centerx  + self.rect.width * 2 , self.rect.centery)
     #     self.topLeftSensor = (self.rect.centerx - self.rect.width , self.rect.centery - self.rect.height)
@@ -424,11 +426,11 @@ class Player(AnimatedSprite):
     #     # print("downRightSensor:  x: " , self.downRightSensor[0], "y: ", self.downRightSensor[1])
     #     # print("\n")
 
-    #     if display:
-    #             screen.blit(pygame.image.load(self.sensorImg), self.leftSensor)
-    #             screen.blit(pygame.image.load(self.sensorImg), self.rightSensor)
-    #             screen.blit(pygame.image.load(self.sensorImg), self.downLeftSensor)
-    #             screen.blit(pygame.image.load(self.sensorImg), self.downRightSensor)
+        if display:
+            screen.blit(pygame.image.load(self.sensorImg), self.leftSensor)
+            screen.blit(pygame.image.load(self.sensorImg), self.rightSensor)
+            screen.blit(pygame.image.load(self.sensorImg), self.downLeftSensor)
+            screen.blit(pygame.image.load(self.sensorImg), self.downRightSensor)
     #             #screen.blit(pygame.image.load(self.sensorImg), self.leftLongDistanceSensor)
     #             #screen.blit(pygame.image.load(self.sensorImg), self.rightLongDistanceSensor)
     #             screen.blit(pygame.image.load(self.sensorImg), self.topLeftSensor)
@@ -1352,11 +1354,12 @@ class ForbiddenCave:
                ##################################################
                if not player.ai:
                     player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, self.levelcnt), self.screen, self.costs)
+                    
 
                self.frameCounter += 1
-               if self.frameCounter == UPDATE_AI_FRAME:
-                player.ai.iaMoving(player.ai.findGem(gemgroup, doorgroup))
-                self.frameCounter = 0
+               if self.frameCounter == player.update_ia_frame:
+                    player.ai.updateBehaviour(gemgroup, doorgroup)
+                    self.frameCounter = 0
          
 
                ##################################################
@@ -1379,6 +1382,7 @@ class ForbiddenCave:
                firegroup.draw(self.screen)
                monstergroup.draw(self.screen)
                batgroup.draw(self.screen) 
+               player.refresh_sensors(self.screen, True)
                if(self.gemcnt == 0):
                    if not doorsoundPlayed:
                        self.doorSound.play()

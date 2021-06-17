@@ -1,6 +1,9 @@
+from typing import TYPE_CHECKING
 import pygame
 import random
 import math
+import ForbiddenCave
+from enum import Enum
 from queue import PriorityQueue
 
 # Contains player AI logic
@@ -10,6 +13,8 @@ class PlayerAI:
         self.map = map
         self.screen = screen
         self.costMap = costs
+        self.state = State.SEARCHING
+        self.isJumping = False
         
     def random(self):
         action = random.randint(0, 10)
@@ -18,10 +23,35 @@ class PlayerAI:
         else:
             player.xmove = random.randint(-1, 1)
 
-    def findGem(self, gemGroup,doorGroup):
-        if(len(gemGroup) < 1):
-            return self.findDoor(doorGroup)
+    def updateBehaviour(self,gemGroup,doorGroup):
+        if self.state == State.SEARCHING:
+            if(len(gemGroup) < 1):
+                return self.iaMoving(self.findDoor(doorGroup))
+            else:
+                return  self.iaMoving(self.findGem(gemGroup))
+        elif self.state == State.JUMPING:
+            print("state : Jumping") 
+            if self.isJumping == False:
+                self.jump()
+                self.isJumping= True
+            elif self.player.jump == 0:
+                self.isJumping = False
+                self.state = State.SEARCHING
+                self.player.update_ia_frame = 10
+
+    def jump(self):
+        if (self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True:
+            #self.player.jumpSound.play()
+            self.player.jump = -5.2
+            self.player.climbMove = 0
+            self.player.doClimb = False
+            self.player.doElevator = False
+            self.player.elevator = None
+            #self.player.xmove = 1
+            print("salto jumppp")
         
+    
+    def findGem(self, gemGroup):
         playerPos = (self.player.rect.centerx, self.player.rect.centery)
         closestGems = gemGroup
 
@@ -75,57 +105,65 @@ class PlayerAI:
         
         #nextNextMove = path.nodes[len(path.nodes)-3]
         playerPos = (self.player.rect.x, self.player.rect.y)
-        
+
         # x, y = screen_to_map(currentMove)
         # xx, yy = screen_to_map(nextMove)
         # print(x, y)
         # drawCircle(currentMove, self.screen, (0, 0, 255))
         # if (onMap((x,y), self.map) and self.map[int(y)][int(x)] == 'l'):
-        #     print("######### start ladder state")
-        #     # start ladder state
-        #     direction = "up"
-        #     if(playerPos[1] - nextMove[1] < 0): 
-        #         direction = "down"
+           
+        index = len(path.nodes)-2
+        x, y = screen_to_map(nextMove)
+        xP, yP = screen_to_map(playerPos)
+
+        if (onMap((x,y+1), self.map) and (self.map[int(y+1)][int(x)] == '.' or self.map[int(y+1)][int(x)] == 'x') \
+                    and  (onMap((xP,yP+1), self.map) and self.isFloor((xP,yP+1),self.map))):
+            while index >  0:
+                nextMove1 = path.nodes[index]
+                xx, yy = screen_to_map(nextMove1)
+                if self.map[int(yy+1)][int(xx)] == 'a' and 4 > abs(xx - xP) and (yy == yP or yy + 1 == yP or yy -1 == yP):
+                    if yy + 1 == yP:
+                        self.player.update_ia_frame = 50
+                      
+                    self.state = State.JUMPING
+                    self.player.doClimb = False
+                    self.player.climbMove = 0
+    
+                    #Maybe this is bad
+                    print("#########################State change to jumping#########################")
+                    return 
+                if xx >= xP + 3:
+                    break
+                index -= 1
+ 
+        if (onMap((xP-1,yP),self.map)and self.map[int(yP)][int(xP - 1)] == 'f' and self.player.xmove == -1 ) \
+            or (onMap((xP+1,yP),self.map) and self.map[int(yP)][int(xP + 1)] == 'f' and self.player.xmove == 1):
+                print("firee")
+                self.player.update_ia_frame = 30
+                self.state = State.JUMPING
+                self.player.doClimb = False
+                self.player.climbMove = 0
+                return
+        if (onMap((xP,yP),self.map)and self.map[int(yP)][int(xP)] == 'f' and (self.player.xmove == -1 or self.player.xmove == 1)):
+                print("firee")
+                self.player.update_ia_frame = 30
+                self.state = State.JUMPING
+                self.player.doClimb = False
+                self.player.climbMove = 0
+                return
+        ## fire on diagonal rip rip rip
+        if (onMap((xP,yP+1),self.map)and self.map[int(yP+1)][int(xP)] == 'f' and self.player.xmove == -1 ) \
+            or (onMap((xP,yP+1),self.map) and self.map[int(yP+1)][int(xP)] == 'f' and self.player.xmove == 1):
+                print("diagonal fire")
+                self.state = State.JUMPING
+                self.player.doClimb = False
+                self.player.climbMove = 0
+                return
+
+        if playerPos[1] > nextMove[1]:
             
-        #     # center 
-        #     self.player.rect.x = nextMove[0]
-        #     self.player.rect.y = nextMove[1]
-        #     #playerPos = nextMove
-
-        #     print(playerPos)
-
-        #     if direction == "down" :
-        #         if self.player.canClimb:
-        #             self.player.doClimb = True
-        #             self.player.climbMove = 1 #(nextMove[1] - playerPos[1])/20
-        #             print("descer escada")
-        #     else:
-        #         if self.player.canClimb:
-        #             self.player.doClimb = True
-        #             self.player.climbMove = -1 #(playerPos[1] - nextMove[1])/20
-        #             print("escalar")
-        #     return 
-
-
-        #differenceX = abs(playerPos[0] - nextMove[0])/40
-        #differenceY = abs(playerPos[1] - nextMove[1])/40
-
-        #differenceXX = abs(playerPos[0] - nextNextMove[0])/40
-        #differenceYY = abs(playerPos[1] - nextNextMove[1])/40
-
-        # x, y = screen_to_map(nextMove)
-        # xx, yy = screen_to_map(nextNextMove)
-
-        # if (differenceX < 1 and differenceY < 1) or ((onMap((x,y), self.map) and self.map[int(y)][int(x)] != 'l' and differenceX < 1 \
-        #     and onMap((xx,yy), self.map) and self.map[int(yy)][int(xx)] != 'l')):
-        #     nextMove = path.nodes[len(path.nodes)-3]
-
-        #print(playerPos, " ->" , nextMove)        
-        nextMove = (nextMove[0], nextMove[1])
-
-        if playerPos[1] > nextMove[1] :
             if (self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True:
-                #self.jumpSound.play()
+                        #self.jumpSound.play()
                 self.player.jump = -5.2
                 self.player.climbMove = 0
                 self.player.doClimb = False
@@ -155,8 +193,13 @@ class PlayerAI:
                 print("escalar")
 
           
-    def sameSquare(self, currentPos, nextMovePos):
-        return screen_to_map(currentPos) == screen_to_map(nextMovePos)           
+    def isFloor(self, point, textmap):
+        x, y = point
+        if onMap(point, textmap):
+            c = textmap[y][x]
+            return c == 'b' or c == 'a' or c == 'l'
+        else:
+            return False         
 
 
 ##################
@@ -289,7 +332,7 @@ def calcTileCost(currentTile, point, textmap, screen):
                         hasPlatform = True
         
         if hasFloor: 
-            cost = 99
+            cost = 30
         # _ _
         elif ((onMap((x-1,y+1), textmap) and textmap[y+1][x-1] == 'a') or (onMap((x+1,y+1), textmap) and textmap[y+1][x+1] == 'a')):
             cost = 0
@@ -392,3 +435,8 @@ def drawCircle(point, screen, color = (255,255,255)):
     pygame.draw.circle(screen, color,(x,y),5,0)
     pygame.display.flip()
     #clock.tick(3)
+
+class State(Enum):
+    SEARCHING = 1
+    JUMPING = 2
+    #LADDER = 3
