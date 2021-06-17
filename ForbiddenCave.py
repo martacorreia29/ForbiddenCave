@@ -410,8 +410,8 @@ class Player(AnimatedSprite):
 
            
     def refresh_sensors(self, screen, display):
-        self.leftSensor = (self.rect.centerx - self.rect.width , self.rect.centery)
-        self.rightSensor = (self.rect.centerx  + self.rect.width , self.rect.centery)
+        self.leftSensor = (self.rect.centerx - 35 , self.rect.centery)
+        self.rightSensor = (self.rect.centerx  + 30 , self.rect.centery)
         self.downLeftSensor = (self.rect.centerx - self.rect.width , self.rect.centery + self.rect.height -10)
         self.downRightSensor = (self.rect.centerx + self.rect.width , self.rect.centery + self.rect.height -10)
     #     #self.leftLongDistanceSensor = (self.rect.centerx - self.rect.width * 2, self.rect.centery)
@@ -1358,7 +1358,7 @@ class ForbiddenCave:
 
                self.frameCounter += 1
                if self.frameCounter == player.update_ia_frame:
-                    player.ai.updateBehaviour(gemgroup, doorgroup)
+                    player.ai.updateBehaviour(gemgroup, doorgroup,firegroup)
                     self.frameCounter = 0
          
 
