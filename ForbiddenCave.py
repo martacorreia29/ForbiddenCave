@@ -1011,7 +1011,7 @@ class ForbiddenCave:
        # Level maps
        #self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                     #PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       self.maps = [PATH_MAPS + "level3.txt"]
+       self.maps = [PATH_MAPS + "level2.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1326,7 +1326,7 @@ class ForbiddenCave:
            while loopstate == 1:
                clock.tick(100) # fps  
                
-               # Decrease bonues
+               # Decrease bonus
                time = pygame.time.get_ticks()
                if pygame.time.get_ticks() - self.lastBonusDecTime > 5000:                   
                    if self.bonus > 0:
@@ -1334,7 +1334,7 @@ class ForbiddenCave:
                        self.bonus -= 100
                        self.lastBonusDecTime = time  
                if self.bonus == 0:   
-                   loopstate = 0 # Life lost        
+                   loopstate = 0 # life lost        
     
                ##################################################
                ### Handle input events

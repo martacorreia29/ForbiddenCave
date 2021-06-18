@@ -38,7 +38,7 @@ class PlayerAI:
                 self.jump()
                 self.isJumping= True
 
-            elif self.player.jump == 0: #onMap((playerPos[0], playerPos[1]), self.map) and self.map[playerPos[1]+1][playerPos[0]] == 'a':  #self.player.jump == 0:
+            elif self.player.jump == 0:
                 self.isJumping = False
                 self.state = State.SEARCHING
                 self.player.update_ia_frame = 10
@@ -67,7 +67,7 @@ class PlayerAI:
 
     def jump(self):
         if (self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True:
-            #self.player.jumpSound.play()
+            #TODO self.player.jumpSound.play()
             self.player.jump = -5.2
             self.player.climbMove = 0
             self.player.doClimb = False
@@ -89,6 +89,7 @@ class PlayerAI:
                 gemsDistances.update({distance:gem})            
             closestGems = [gemsDistances[k] for k in sorted(list(gemsDistances.keys()))[:4]]
         paths = []
+
         # for all gems calculate aStar
         for gem in closestGems:
             goal = (gem.rect.x, gem.rect.y)
@@ -125,7 +126,7 @@ class PlayerAI:
         index = len(path.nodes)-2
         x, y = screen_to_map(nextMove)
         xP, yP = screen_to_map(playerPos)        
-        xP2, yP2 = screen_to_map(playerPos2)  
+        xP2, yP2 = screen_to_map(playerPos2)
 
         # uses sensors to detect fire
         leftSensor = (self.player.rect.centerx - 40, self.player.rect.centery)
@@ -140,15 +141,15 @@ class PlayerAI:
                 self.player.climbMove = 0
                 return 
     
-        if (((onMap((xP2-1,yP2),self.map)and self.map[int(yP2)][int(xP2 - 1)] == 'f' and self.player.xmove == -1 ) \
-            or (onMap((xP2+1,yP2),self.map) and self.map[int(yP2)][int(xP2 + 1)] == 'f' and self.player.xmove == 1))) \
-            or (onMap((xP2,yP2),self.map)and self.map[int(yP2)][int(xP2)] == 'f' and (self.player.xmove == -1 or self.player.xmove == 1)):
+        if (((onMap((xP-1,yP),self.map)and self.map[int(yP)][int(xP - 1)] == 'f' and self.player.xmove == -1 ) \
+            or (onMap((xP+1,yP),self.map) and self.map[int(yP)][int(xP + 1)] == 'f' and self.player.xmove == 1))) \
+            or (onMap((xP,yP),self.map)and self.map[int(yP)][int(xP)] == 'f' and (self.player.xmove == -1 or self.player.xmove == 1)):
                 print("firee")
                 return 
                     
         # fire on diagonal
-        if (onMap((xP2,yP2+1),self.map)and self.map[int(yP2+1)][int(xP2)] == 'f' and self.player.xmove == -1 ) \
-            or (onMap((xP2,yP+1),self.map) and self.map[int(yP2+1)][int(xP2)] == 'f' and self.player.xmove == 1):
+        if (onMap((xP,yP+1),self.map)and self.map[int(yP+1)][int(xP)] == 'f' and self.player.xmove == -1 ) \
+            or (onMap((xP,y+1),self.map) and self.map[int(yP+1)][int(xP)] == 'f' and self.player.xmove == 1):
                 print("diagonal fire")
                 self.state = State.JUMPING
                 self.player.doClimb = False
@@ -171,12 +172,10 @@ class PlayerAI:
                 if xx >= xP + 3:
                     break
                 index -= 1
-
-        willJump = False
+        
         # jump
         if playerPos[1] > nextMove[1]:
-            startJump =  True
-
+            willJump = False
             # verifies if next 4 movements are fires
             while index >  0:
                 nextMove1 = path.nodes[index]
@@ -221,7 +220,6 @@ class PlayerAI:
                 self.player.doClimb = True
                 self.player.climbMove = -1
                 if self.map[int(y)][int(x)] == 'l':
-                    print("ladder")
                     xM, yM = screen_to_map(playerPos2)
                     xS, yS = map_to_screen((xM, yM))
                     self.player.rect.centerx, self.player.rect.centery = xS + 15, yS
