@@ -33,13 +33,12 @@ class PlayerAI:
 
         elif self.state == State.JUMPING:
             playerPos = screen_to_map((self.player.rect.centerx, self.player.rect.centery))
-            print("state : Jumping ", self.player.jump)
+            print("state : Jumping ")
             if not self.isJumping:
                 self.jump()
                 self.isJumping= True
 
             elif self.player.jump == 0: #onMap((playerPos[0], playerPos[1]), self.map) and self.map[playerPos[1]+1][playerPos[0]] == 'a':  #self.player.jump == 0:
-                print(playerPos)
                 self.isJumping = False
                 self.state = State.SEARCHING
                 self.player.update_ia_frame = 10
@@ -221,12 +220,11 @@ class PlayerAI:
             if self.player.canClimb:
                 self.player.doClimb = True
                 self.player.climbMove = -1
-                #self.player.xmove = 0
-                '''if self.map[int(y)][int(x)] == 'l':
+                if self.map[int(y)][int(x)] == 'l':
                     print("ladder")
-                    xM, yM = screen_to_map(playerPos)
+                    xM, yM = screen_to_map(playerPos2)
                     xS, yS = map_to_screen((xM, yM))
-                    self.player.rect.centerx, self.player.rect.centery = xS + 20, yS'''
+                    self.player.rect.centerx, self.player.rect.centery = xS + 15, yS
                 print("escalar")
           
     def isFloor(self, point, textmap):
