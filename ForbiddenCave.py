@@ -1011,7 +1011,7 @@ class ForbiddenCave:
        # Level maps
        #self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                     #PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       self.maps = [PATH_MAPS + "level2.txt"]
+       self.maps = [PATH_MAPS + "levelTest.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1315,7 +1315,7 @@ class ForbiddenCave:
            
            # Create player sprite 
            self.startSound.play()
-           initialPos = (40, 600) #(680, 160)
+           initialPos = PlayerAI.map_to_screen((23,14)) #(40, 600)
            player = Player(initialPos[0], initialPos[1], PATH_IMAGES + "playerLeft.png", PATH_IMAGES + "playerRight.png", PATH_IMAGES + "playerClimb.png", PATH_IMAGES + "scull.png", \
                            self.background, self.map)
            
@@ -1395,7 +1395,7 @@ class ForbiddenCave:
 
                self.frameCounter += 1
                if self.frameCounter == player.update_ia_frame:
-                    player.ai.updateBehaviour(gemgroup, doorgroup,firegroup, wallgroup)
+                    player.ai.updateBehaviour(gemgroup, doorgroup,firegroup, wallgroup, monstergroup)
                     self.frameCounter = 0
          
 
