@@ -25,6 +25,7 @@ class PlayerAI:
 
     def updateBehaviour(self,gemGroup,doorGroup,firegroup, wallgroup):
         if self.state == State.SEARCHING:
+            print("state : Searching") 
             if(len(gemGroup) < 1):
                 return self.iaMoving(self.findDoor(doorGroup),firegroup, wallgroup)
             else:
@@ -38,6 +39,27 @@ class PlayerAI:
                 self.isJumping = False
                 self.state = State.SEARCHING
                 self.player.update_ia_frame = 10
+        elif self.state == State.ADJUST:
+            print("state : Adjusting") 
+            self.adjust(wallgroup)
+
+    def adjust(self, wallgroup):
+        playerPos = (self.player.rect.x, self.player.rect.y)  
+        xP, yP = screen_to_map(playerPos) 
+
+        for wall in wallgroup:                    
+            xS, yS = wall.rect.centerx, wall.rect.centery
+            xW, yW = screen_to_map((xS, yS))
+            # wall under Player
+            if xW == xP and yW == yP+1:   
+                # adjust position for perfect jump
+                if self.player.xmove == 1:
+                    self.player.rect.centerx, self.player.rect.centery = xS + 10, yS - 40
+                else:
+                    self.player.rect.centerx, self.player.rect.centery = xS - 10, yS - 40
+
+        self.state = State.JUMPING
+
 
     def jump(self):
         if (self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True:
@@ -48,7 +70,7 @@ class PlayerAI:
             self.player.doElevator = False
             self.player.elevator = None
             #self.player.xmove = 1
-            print("salto jumppp")
+            print("jump")
         
     
     def findGem(self, gemGroup):
@@ -96,7 +118,6 @@ class PlayerAI:
         return path
 
     def iaMoving(self, path, firegroup, wallgroup): 
-        #jump = False
         nextMove = path.nodes[len(path.nodes)-2]
         playerPos = (self.player.rect.x, self.player.rect.y) 
    
@@ -114,49 +135,14 @@ class PlayerAI:
                 nextMove1 = path.nodes[index]
                 xx, yy = screen_to_map(nextMove1)
                 if self.map[int(yy+1)][int(xx)] == 'a' and 4 > abs(xx - xP) and (yy == yP or yy + 1 == yP or yy - 1 == yP):
-                    #jump = True
-                    # checks the wall
-                    for wall in wallgroup:                    
-                        xS, yS = wall.rect.centerx, wall.rect.centery
-                        xW, yW = screen_to_map((xS, yS))
-                        # wall under Player
-                        if xW == xP and yW == yP+1:   
-                            # adjust position for perfect jump
-                            if self.player.xmove == 1:
-                                self.player.rect.centerx, self.player.rect.centery = xS + 10, yS - 40
-                            else:
-                                self.player.rect.centerx, self.player.rect.centery = xS - 10, yS - 40
-                    self.state = State.JUMPING
+                    self.state = State.ADJUST
                     self.player.doClimb = False
                     self.player.climbMove = 0
-                    print("jump")
+                    print("adjust")
                     return
                 if xx >= xP + 3:
                     break
                 index -= 1
-
-            # uses sensors to detect if its close enough to jump
-            '''if jump:
-                for wall in wallgroup:                    
-                    xS, yS = wall.rect.centerx, wall.rect.centery
-                    xW, yW = screen_to_map((xS, yS))
-                    # wall under Player
-                    if xW == xP and yW == yP+1:                        
-                        print("found wall")
-                        if (abs(xS - downLeftSensor[0]) > 20 and self.player.xmove == -1) or \
-                        (abs(xS - downRightSensor[0]) > 20 and self.player.xmove == 1): 
-                            if self.player.xmove == 1:
-                                self.player.rect.centerx, self.player.rect.centery = xS + 10, yS - 40
-                            else:
-                                self.player.rect.centerx, self.player.rect.centery = xS - 10, yS - 40
-                            #if yy + 1 == yP:
-                            #    self.player.update_ia_frame = 40
-                            self.state = State.JUMPING
-                            self.player.doClimb = False
-                            self.player.climbMove = 0
-                            print("jump sensors")
-                            jump = False
-                return'''
 
         # uses sensors to detect fire
         leftSensor = (self.player.rect.centerx - 40, self.player.rect.centery)
@@ -489,4 +475,5 @@ def drawCircle(point, screen, color = (255,255,255)):
 class State(Enum):
     SEARCHING = 1
     JUMPING = 2
+    ADJUST = 3
     #LADDER = 3
