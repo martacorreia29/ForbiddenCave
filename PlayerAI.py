@@ -25,20 +25,25 @@ class PlayerAI:
 
     def updateBehaviour(self,gemGroup,doorGroup,firegroup, wallgroup):
         if self.state == State.SEARCHING:
-            print("state : Searching") 
+            #print("state : Searching") 
             if(len(gemGroup) < 1):
                 return self.iaMoving(self.findDoor(doorGroup),firegroup, wallgroup)
             else:
                 return  self.iaMoving(self.findGem(gemGroup),firegroup, wallgroup)
+
         elif self.state == State.JUMPING:
-            print("state : Jumping") 
-            if self.isJumping == False:
+            playerPos = screen_to_map((self.player.rect.centerx, self.player.rect.centery))
+            print("state : Jumping ", self.player.jump)
+            if not self.isJumping:
                 self.jump()
                 self.isJumping= True
-            elif self.player.jump == 0:
+
+            elif self.player.jump == 0: #onMap((playerPos[0], playerPos[1]), self.map) and self.map[playerPos[1]+1][playerPos[0]] == 'a':  #self.player.jump == 0:
+                print(playerPos)
                 self.isJumping = False
                 self.state = State.SEARCHING
                 self.player.update_ia_frame = 10
+
         elif self.state == State.ADJUST:
             print("state : Adjusting") 
             self.adjust(wallgroup)
@@ -69,7 +74,6 @@ class PlayerAI:
             self.player.doClimb = False
             self.player.doElevator = False
             self.player.elevator = None
-            #self.player.xmove = 1
             print("jump")
         
     
@@ -105,15 +109,13 @@ class PlayerAI:
         return closestGemPath
                     
 
-    def findDoor(self, doorGroup):
-        
+    def findDoor(self, doorGroup):        
         playerPos = (self.player.rect.centerx, self.player.rect.centery)
-        # Calculate the best path for the door
+
+        # calculate the best path for the door
         door = list(doorGroup)[0]
         goal = (door.rect.x, door.rect.y)
         path = aStar(playerPos, goal, self.map, self.screen, self.costMap)
-        
-        #print(closestGemPath.cost)
         drawPath(path, self.screen)
         return path
 
@@ -124,26 +126,7 @@ class PlayerAI:
         index = len(path.nodes)-2
         x, y = screen_to_map(nextMove)
         xP, yP = screen_to_map(playerPos)        
-
-        # verifies if is the end of platform and goes through path to see if path leads to another 
-        # platform at the same level so it can jump      
-        downLeftSensor = (self.player.rect.centerx - self.player.rect.width , self.player.rect.centery + self.player.rect.height - 10)
-        downRightSensor = (self.player.rect.centerx + self.player.rect.width , self.player.rect.centery + self.player.rect.height - 10)
-        if onMap((x,y+1), self.map) and self.isVoid((x, y+1), self.map) and \
-            onMap((xP,yP+1), self.map) and self.isFloor((xP,yP+1), self.map):
-            while index >  0:
-                nextMove1 = path.nodes[index]
-                xx, yy = screen_to_map(nextMove1)
-                if self.map[int(yy+1)][int(xx)] == 'a' and 4 > abs(xx - xP) and (yy == yP or yy + 1 == yP or yy - 1 == yP):
-                    self.state = State.ADJUST
-                    self.player.doClimb = False
-                    self.player.climbMove = 0
-                    print("adjust")
-                    return
-                if xx >= xP + 3:
-                    break
-                index -= 1
-
+        
         # uses sensors to detect fire
         leftSensor = (self.player.rect.centerx - 40, self.player.rect.centery)
         rightSensor = (self.player.rect.centerx + 40, self.player.rect.centery)
@@ -171,6 +154,24 @@ class PlayerAI:
                 self.player.doClimb = False
                 self.player.climbMove = 0
                 return
+
+        # verifies if is the end of platform and goes through path to see if path leads to another 
+        # platform at the same level so it can jump      
+        print(x, y, xP, yP)
+        if onMap((x,y+1), self.map) and self.isVoid((x, y+1), self.map) and \
+            onMap((xP,yP+1), self.map) and self.isFloor((xP,yP+1), self.map) and x != xP:
+            while index >  0:
+                nextMove1 = path.nodes[index]
+                xx, yy = screen_to_map(nextMove1)
+                if self.map[int(yy+1)][int(xx)] == 'a' and 4 > abs(xx - xP) and (yy == yP or yy + 1 == yP or yy - 1 == yP):
+                    self.state = State.ADJUST
+                    print("adjust")
+                    self.player.doClimb = False
+                    self.player.climbMove = 0
+                    return
+                if xx >= xP + 3:
+                    break
+                index -= 1
 
         willJump = False
         # jump
@@ -219,8 +220,13 @@ class PlayerAI:
             if self.player.canClimb:
                 self.player.doClimb = True
                 self.player.climbMove = -1
+                #self.player.xmove = 0
+                '''if self.map[int(y)][int(x)] == 'l':
+                    print("ladder")
+                    xM, yM = screen_to_map(playerPos)
+                    xS, yS = map_to_screen((xM, yM))
+                    self.player.rect.centerx, self.player.rect.centery = xS + 20, yS'''
                 print("escalar")
-
           
     def isFloor(self, point, textmap):
         x, y = point
