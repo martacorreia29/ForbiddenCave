@@ -23,12 +23,12 @@ class PlayerAI:
         else:
             player.xmove = random.randint(-1, 1)
 
-    def updateBehaviour(self,gemGroup,doorGroup,firegroup, wallgroup):
+    def updateBehaviour(self,gemGroup,doorGroup,firegroup):
         if self.state == State.SEARCHING:
             if(len(gemGroup) < 1):
-                return self.iaMoving(self.findDoor(doorGroup),firegroup, wallgroup)
+                return self.iaMoving(self.findDoor(doorGroup),firegroup)
             else:
-                return  self.iaMoving(self.findGem(gemGroup),firegroup, wallgroup)
+                return  self.iaMoving(self.findGem(gemGroup),firegroup)
         elif self.state == State.JUMPING:
             print("state : Jumping") 
             if self.isJumping == False:
@@ -95,89 +95,74 @@ class PlayerAI:
         drawPath(path, self.screen)
         return path
 
-    def iaMoving(self, path, firegroup, wallgroup): 
-        #jump = False
+    def iaMoving(self,path,firegroup):       
         nextMove = path.nodes[len(path.nodes)-2]
-        playerPos = (self.player.rect.x, self.player.rect.y) 
+
+        n = 0 # change for test??
+        playerPos = (self.player.rect.x , self.player.rect.y) 
+        playerPosJump = playerPos if nextMove[0] > playerPos[0]  else (self.player.rect.x + n, self.player.rect.y)
    
         index = len(path.nodes)-2
         x, y = screen_to_map(nextMove)
-        xP, yP = screen_to_map(playerPos)        
+        xP, yP = screen_to_map(playerPos)
+        xPJ, yPJ = screen_to_map(playerPosJump)
 
-        # verifies if is the end of platform and goes through path to see if path leads to another 
-        # platform at the same level so it can jump      
-        downLeftSensor = (self.player.rect.centerx - self.player.rect.width , self.player.rect.centery + self.player.rect.height - 10)
-        downRightSensor = (self.player.rect.centerx + self.player.rect.width , self.player.rect.centery + self.player.rect.height - 10)
-        if onMap((x,y+1), self.map) and self.isVoid((x, y+1), self.map) and \
-            onMap((xP,yP+1), self.map) and self.isFloor((xP,yP+1), self.map):
+
+        if (onMap((x,y+1), self.map) and (self.map[int(y+1)][int(x)] == '.' or self.map[int(y+1)][int(x)] == 'x') \
+                    and  (onMap((xPJ,yPJ+1), self.map) and self.isFloor((xPJ,yPJ+1),self.map))):
             while index >  0:
                 nextMove1 = path.nodes[index]
                 xx, yy = screen_to_map(nextMove1)
-                if self.map[int(yy+1)][int(xx)] == 'a' and 4 > abs(xx - xP) and (yy == yP or yy + 1 == yP or yy - 1 == yP):
-                    #jump = True
-                    # checks the wall
-                    for wall in wallgroup:                    
-                        xS, yS = wall.rect.centerx, wall.rect.centery
-                        xW, yW = screen_to_map((xS, yS))
-                        # wall under Player
-                        if xW == xP and yW == yP+1:   
-                            # adjust position for perfect jump
-                            if self.player.xmove == 1:
-                                self.player.rect.centerx, self.player.rect.centery = xS + 10, yS - 40
-                            else:
-                                self.player.rect.centerx, self.player.rect.centery = xS - 10, yS - 40
+                if self.map[int(yy+1)][int(xx)] == 'a' and 4 > abs(xx - xPJ) and (yy == yPJ or yy + 1 == yPJ or yy -1 == yPJ):
+                    if yy + 1 == yPJ :
+                        self.player.update_ia_frame = 40
+                      
                     self.state = State.JUMPING
                     self.player.doClimb = False
                     self.player.climbMove = 0
-                    print("jump")
-                    return
-                if xx >= xP + 3:
+    
+                    #Maybe this is bad
+                    print("#########################State change to jumping#########################")
+                    return 
+                if xx >= xPJ + 3:
                     break
                 index -= 1
-
-            # uses sensors to detect if its close enough to jump
-            '''if jump:
-                for wall in wallgroup:                    
-                    xS, yS = wall.rect.centerx, wall.rect.centery
-                    xW, yW = screen_to_map((xS, yS))
-                    # wall under Player
-                    if xW == xP and yW == yP+1:                        
-                        print("found wall")
-                        if (abs(xS - downLeftSensor[0]) > 20 and self.player.xmove == -1) or \
-                        (abs(xS - downRightSensor[0]) > 20 and self.player.xmove == 1): 
-                            if self.player.xmove == 1:
-                                self.player.rect.centerx, self.player.rect.centery = xS + 10, yS - 40
-                            else:
-                                self.player.rect.centerx, self.player.rect.centery = xS - 10, yS - 40
-                            #if yy + 1 == yP:
-                            #    self.player.update_ia_frame = 40
-                            self.state = State.JUMPING
-                            self.player.doClimb = False
-                            self.player.climbMove = 0
-                            print("jump sensors")
-                            jump = False
-                return'''
-
-        # uses sensors to detect fire
-        leftSensor = (self.player.rect.centerx - 40, self.player.rect.centery)
-        rightSensor = (self.player.rect.centerx + 40, self.player.rect.centery)
+        
+        leftSensor = (self.player.rect.centerx - 40 , self.player.rect.centery)
+        rightSensor = (self.player.rect.centerx  + 40 , self.player.rect.centery)
         for fire in firegroup:
-            if (abs(fire.rect.centerx - leftSensor[0]) < 10 and abs(fire.rect.centery - leftSensor[1]) < 5 and self.player.xmove == -1) or \
-            (abs(fire.rect.centerx - rightSensor[0]) < 10 and abs(fire.rect.centery - rightSensor[1]) < 5 and self.player.xmove == 1): 
-                print("sensor fire")
+            if abs(fire.rect.centerx - leftSensor[0]) < 10 and abs(fire.rect.centery - leftSensor[1]) < 5 and self.player.xmove == -1 or \
+            abs(fire.rect.centerx - rightSensor[0]) < 10 and abs(fire.rect.centery - rightSensor[1]) < 5 and self.player.xmove == 1 : 
+                print("sensor firee")
                 self.player.update_ia_frame = 10
                 self.state = State.JUMPING
                 self.player.doClimb = False
                 self.player.climbMove = 0
-                return 
-    
-        if (((onMap((xP-1,yP),self.map)and self.map[int(yP)][int(xP - 1)] == 'f' and self.player.xmove == -1 ) \
-            or (onMap((xP+1,yP),self.map) and self.map[int(yP)][int(xP + 1)] == 'f' and self.player.xmove == 1))) \
-            or (onMap((xP,yP),self.map)and self.map[int(yP)][int(xP)] == 'f' and (self.player.xmove == -1 or self.player.xmove == 1)):
-                print("firee")
-                return 
+                return   
                     
-        # fire on diagonal
+        if ((onMap((xP+1,yP),self.map) and self.map[int(yP)][int(xP + 1)] == 'f' and self.player.xmove == 1)):
+                print("right firee")
+                # self.player.update_ia_frame = 10
+                # self.state = State.JUMPING
+                # self.player.doClimb = False
+                # self.player.climbMove = 0
+                return    
+        if (((onMap((xP-1,yP),self.map)and self.map[int(yP)][int(xP - 1)] == 'f' and self.player.xmove == -1 ) \
+            or (onMap((xP+1,yP),self.map) and self.map[int(yP)][int(xP + 1)] == 'f' and self.player.xmove == 1))):
+                print("left firee")
+                # self.player.update_ia_frame = 30
+                # self.state = State.JUMPING
+                # self.player.doClimb = False
+                self.player.climbMove = 0
+                return
+        if (onMap((xP,yP),self.map)and self.map[int(yP)][int(xP)] == 'f' and (self.player.xmove == -1 or self.player.xmove == 1)):
+                print("firee")
+                # self.player.update_ia_frame = 30
+                # self.state = State.JUMPING
+                # self.player.doClimb = False
+                # self.player.climbMove = 0
+                return
+        ## fire on diagonal rip rip rip
         if (onMap((xP,yP+1),self.map)and self.map[int(yP+1)][int(xP)] == 'f' and self.player.xmove == -1 ) \
             or (onMap((xP,yP+1),self.map) and self.map[int(yP+1)][int(xP)] == 'f' and self.player.xmove == 1):
                 print("diagonal fire")
@@ -187,70 +172,60 @@ class PlayerAI:
                 return
 
         willJump = False
-        # jump
         if playerPos[1] > nextMove[1]:
-            # verifies if next 6 movements are jumping movements 
+            startJump =  False
             while index >  0:
                 nextMove1 = path.nodes[index]
-                xx, yy = screen_to_map(nextMove1)           
-                
-                if yy == yP - 1:
+                xx, yy = screen_to_map(nextMove1)
+                if yy != yP:
+                    startJump = True
+                if startJump and (yy == yP or yy == yP -1):
                     willJump = True
                     break
-
                 if xx >= xP + 6:
                     break
                 index -= 1
 
-            if not willJump and ((self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True):
+            if willJump == False and ((self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True):
                 #self.jumpSound.play()
                 self.player.jump = -5.2
                 self.player.climbMove = 0
                 self.player.doClimb = False
                 self.player.doElevator = False
                 self.player.elevator = None
+                #self.player.xmove = 0
                 print("salto astar")
-                
-        # left 
-        elif playerPos[0] > nextMove[0]:
-            self.player.xmove = -1
-            print("esquerda")
 
-        # right
-        elif playerPos[0] < nextMove[0]: 
-            self.player.xmove = 1
+                
+                
+        elif playerPos[0] > nextMove[0]: # left
+            self.player.xmove = -1 #-(playerPos[0] - nextMove[0])/40
+    
+        elif playerPos[0] < nextMove[0]: # right
+            self.player.xmove = 1 #(nextMove[0] - playerPos[0])/40
             print("direita")
             
-        # climb down
         if playerPos[1] < nextMove[1] :
             if self.player.canClimb:
                 self.player.doClimb = True
-                self.player.climbMove = 1
+                self.player.climbMove = 1 #(nextMove[1] - playerPos[1])/20
                 print("descer escada")
 
-        # climb up
         if playerPos[1] > nextMove[1]:
             if self.player.canClimb:
                 self.player.doClimb = True
-                self.player.climbMove = -1
+                self.player.climbMove = -1 #(playerPos[1] - nextMove[1])/20
                 print("escalar")
 
           
     def isFloor(self, point, textmap):
         x, y = point
         if onMap(point, textmap):
-            c = textmap[int(y)][int(x)]
+            c = textmap[y][x]
             return c == 'b' or c == 'a' or c == 'l'
         else:
             return False         
 
-    def isVoid(self, point, textmap):
-        x, y = point
-        if onMap(point, textmap):
-            c = textmap[int(y)][int(x)]
-            return c == '.' or c == 'x'
-        else:
-            return False 
 
 ##################
 ## A* algorithm ##

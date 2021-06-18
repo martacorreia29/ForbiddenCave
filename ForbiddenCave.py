@@ -44,6 +44,7 @@ class LevelMap:
         self.firegroup = None
         self.doorgroup = None
         self.batgroup = None
+        self.wallgroup = None
         
         # Offset for tile position location
         self.xoff = 0
@@ -326,6 +327,31 @@ class LevelMap:
         
         return self.levelsurface       
 
+    def fetchWallsGroup(self, dirty=False):
+        # Don't recreate wall group
+        if self.wallgroup is not None and not dirty:
+            return self.wallgroup
+        
+        # Fetch wall size
+        size = self.tile.get_size()
+        
+        # Create the sprite group for the walls
+        self.wallgroup = pygame.sprite.RenderPlain()
+        
+        # Create wall sprites and add them to the wall  group
+        ypos = self.yoff
+        for line in self.textmap:
+            xpos = 0
+            for tile in line:
+                if tile == "a" or tile == "l":
+                    wall = Wall(xpos, ypos)
+                    self.wallgroup.add(wall)
+                xpos = xpos + size[0]
+            ypos = ypos + size[1]
+        
+        return self.wallgroup    
+
+
 # Superclass for animated sprites
 class AnimatedSprite(pygame.sprite.Sprite):
     
@@ -410,8 +436,8 @@ class Player(AnimatedSprite):
 
            
     def refresh_sensors(self, screen, display):
-        self.leftSensor = (self.rect.centerx - 35 , self.rect.centery)
-        self.rightSensor = (self.rect.centerx  + 30 , self.rect.centery)
+        self.leftSensor = (self.rect.centerx - 40 , self.rect.centery)
+        self.rightSensor = (self.rect.centerx  + 40 , self.rect.centery)
         self.downLeftSensor = (self.rect.centerx - self.rect.width , self.rect.centery + self.rect.height -10)
         self.downRightSensor = (self.rect.centerx + self.rect.width , self.rect.centery + self.rect.height -10)
     #     #self.leftLongDistanceSensor = (self.rect.centerx - self.rect.width * 2, self.rect.centery)
@@ -709,6 +735,16 @@ class Gem(pygame.sprite.Sprite):
     def collided(self):
         self.kill()
         print( ">>>> gem collided")
+
+# Walls are collected by the player
+class Wall(pygame.sprite.Sprite):
+    
+    def __init__(self, xpos, ypos):
+        pygame.sprite.Sprite.__init__(self) #call Sprite initialize
+        
+        # Dimensions and position on screen
+        self.rect = Rect(xpos, ypos, 40, 40)
+
         
 # The door leads to the next level
 class Door(pygame.sprite.Sprite):
@@ -975,7 +1011,7 @@ class ForbiddenCave:
        # Level maps
        #self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                     #PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       self.maps = [PATH_MAPS + "level1.txt"]
+       self.maps = [PATH_MAPS + "level3.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1261,6 +1297,7 @@ class ForbiddenCave:
        firegroup = self.map.fetchFiregroup()
        doorgroup = self.map.fetchDoorgroup()
        batgroup = self.map.fetchBatgroup()
+       wallgroup = self.map.fetchWallsGroup()
        collgroup = None
 
        # Draw screen
@@ -1358,7 +1395,7 @@ class ForbiddenCave:
 
                self.frameCounter += 1
                if self.frameCounter == player.update_ia_frame:
-                    player.ai.updateBehaviour(gemgroup, doorgroup,firegroup)
+                    player.ai.updateBehaviour(gemgroup, doorgroup,firegroup, wallgroup)
                     self.frameCounter = 0
          
 
