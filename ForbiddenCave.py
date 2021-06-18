@@ -1011,7 +1011,7 @@ class ForbiddenCave:
        # Level maps
        #self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                     #PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       self.maps = [PATH_MAPS + "levelTest.txt"]
+       self.maps = [PATH_MAPS + "level2.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1311,11 +1311,10 @@ class ForbiddenCave:
        clock=pygame.time.Clock()
        loopstate = 1
        doorsoundPlayed = False
-       while self.lives > 0:
-           
+       while self.lives > 0:           
            # Create player sprite 
            self.startSound.play()
-           initialPos = PlayerAI.map_to_screen((23,14)) #(40, 600)
+           initialPos = (40, 600) #PlayerAI.map_to_screen((23,14)) #(40, 600) 
            player = Player(initialPos[0], initialPos[1], PATH_IMAGES + "playerLeft.png", PATH_IMAGES + "playerRight.png", PATH_IMAGES + "playerClimb.png", PATH_IMAGES + "scull.png", \
                            self.background, self.map)
            

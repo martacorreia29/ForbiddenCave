@@ -66,7 +66,6 @@ class PlayerAI:
 
         self.state = State.JUMPING
 
-
     def jump(self):
         if (self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True:
             #TODO self.player.jumpSound.play()
@@ -76,8 +75,7 @@ class PlayerAI:
             self.player.doElevator = False
             self.player.elevator = None
             print("jump")
-        
-    
+          
     def findGem(self, gemGroup):
         playerPos = (self.player.rect.centerx, self.player.rect.centery)
         closestGems = gemGroup
@@ -127,45 +125,58 @@ class PlayerAI:
 
         continueChecks = True      
         
-        #self.checkMonsters(playerPos, nextMove, monstergroup)
+        continueChecks = self.checkMonsters(playerPos, nextMove, monstergroup)
+        if not continueChecks: return
+
+        # fires
         continueChecks = self.checkFires(playerPos, nextMove, firegroup)
-        if not continueChecks: 
-            return
+        if not continueChecks: return
+
+        # jump
         continueChecks = self.checkJumpBetweenPlataforms(playerPos, nextMove, path, index, monstergroup)
-        if not continueChecks: 
-            return
+        if not continueChecks: return
+
+        # normal movements
         continueChecks = self.movePlayer(playerPos, nextMove, index, path)
 
-    def checkMonsters(self, playerPos, monstergroup, plataformEdge):
-        xP, yP = screen_to_map(playerPos)
-        xEM, yEM = screen_to_map(plataformEdge)
+    def checkMonsters(self, playerPos, nextMove, monstergroup):
+        x, y = screen_to_map(nextMove)
+        xP, yP = screen_to_map(playerPos) 
+        xS, yS = playerPos
 
-        # find platform end
-        goingRight = xEM > xP        i[]i[m]i[]m     
-        safetyDistance = 3 if goingRight else 2 # blocks
-        xES, yES = map_to_screen((xEM + safetyDistance, yEM)) if goingRight else map_to_screen((xEM - safetyDistance, yEM))
-        
-        i = 0
-        foundOtherEdge = None
-        while(not foundOtherEdge and onMap((xEM + i, yEM + 1), self.map)):
-            if(self.isVoid((xEM + i, yEM+1)) or self.map[int(yEM+1)][int(xEM + i)] == 'b'):
-                foundOtherEdge = (xEM +i-1, yEM)
-            i = i + 1 if goingRight else i - 1
+        # uses sensors to detect fire
+        leftSensor = (self.player.rect.centerx - 40, self.player.rect.centery)
+        rightSensor = (self.player.rect.centerx + 40, self.player.rect.centery)
+        for monster in monstergroup:
+            found = False
+            # <0 <i
+            if monster.xmove < 0 and monster.rect.centerx < xS and self.player.xmove == -1 and \
+            abs(monster.rect.centerx - leftSensor[0]) < 20 and abs(monster.rect.centery - leftSensor[1]) < 5:
+                found = True
+            
+            # i 0>
+            if monster.xmove > 0 and monster.rect.centerx > xS and self.player.xmove == 1 and \
+            abs(monster.rect.centerx - rightSensor[0]) < 20 and abs(monster.rect.centery - rightSensor[1]) < 5:
+                found = True
 
-        if foundOtherEdge:
-            foeX , foeY = map_to_screen((foundOtherEdge[0] + 1, foundOtherEdge[1]))
-            drawCircle((foeX,foeY), self.screen, (255, 0, 0))
-            drawCircle((xES,yES), self.screen, (0, 255, 0))
-            for monster in monstergroup:  
-                xMS, yMS = screen_to_map(monster.rect.topleft)        
-                xM, yM = monster.rect.center 
-                onSaveDistance = xES < xM < foeX if goingRight else xES > xM > foeX
-                if (onSaveDistance and yMS == yEM == foundOtherEdge[1]):
-                    print("Monster jump")
-                    self.player.xmove = 1 if goingRight else -1
-                    return True
+            # i <0 
+            if monster.xmove < 0 and monster.rect.centerx > xS and self.player.xmove == 1 and \
+            abs(monster.rect.centerx - rightSensor[0]) < 40 and abs(monster.rect.centery - rightSensor[1]) < 5:
+                found = True            
 
-        return False
+            # 0> i
+            if monster.xmove > 0 and monster.rect.centerx < xS and self.player.xmove == -1 and \
+            abs(monster.rect.centerx - leftSensor[0]) < 40 and abs(monster.rect.centery - leftSensor[1]) < 5:
+                found = True
+
+            if found: 
+                print("sensor monster")
+                self.player.update_ia_frame = 10
+                self.state = State.JUMPING
+                self.player.doClimb = False
+                self.player.climbMove = 0
+                return False
+        return True
 
     # uses sensors to detect fire
     def checkFires(self, playerPos, nextMove, firegroup):
@@ -213,7 +224,7 @@ class PlayerAI:
                 xx, yy = screen_to_map(nextMove1)
                 if self.map[int(yy+1)][int(xx)] == 'a' and 4 > abs(xx - xP) and (yy == yP or yy + 1 == yP or yy - 1 == yP):
                     # check for monsters
-                    if(self.checkMonsters(playerPos, monstergroup, nextMove1)):
+                    if(self.checkMonstersBeforeJump(playerPos, monstergroup, nextMove1)):
                         self.state = State.ADJUST
                         print("adjust")
                         self.player.doClimb = False
@@ -225,6 +236,29 @@ class PlayerAI:
                     break
                 index -= 1
         return True
+
+    def checkMonstersBeforeJump(self, playerPos, monstergroup, plataformEdge):
+            xP, yP = screen_to_map(playerPos)
+            xEM, yEM = screen_to_map(plataformEdge)
+
+            # find platform end
+            goingRight = xEM > xP   
+            safetyDistance = 2 if goingRight else 1 # blocks
+            xES, yES = map_to_screen((xEM + safetyDistance, yEM)) if goingRight else map_to_screen((xEM - safetyDistance, yEM))
+            
+            drawCircle((xES,yES), self.screen, (0, 255, 0))
+            for monster in monstergroup:  
+                xMS, yMS = screen_to_map(monster.rect.topleft)        
+                xM, yM = monster.rect.center
+                print(plataformEdge[0], xM, xES)
+                onSaveDistance = plataformEdge[0] < xM < xES if goingRight else xES < xM < plataformEdge[0] + 40
+                print(onSaveDistance)
+                if (onSaveDistance and yMS == yEM):
+                    return False
+
+            print("Monster jump")
+            self.player.xmove = 1 if goingRight else -1
+            return True
 
     def movePlayer(self, playerPos, nextMove, index, path):
         x, y = screen_to_map(nextMove)
