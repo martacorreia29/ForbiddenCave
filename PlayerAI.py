@@ -50,6 +50,7 @@ class PlayerAI:
             self.adjust(wallgroup)
         elif self.state == State.ON_ELEVATOR:
             self.player.xmove = 0
+            self.player.update_ia_frame = 10
 
 
     def adjust(self, wallgroup):
@@ -154,26 +155,44 @@ class PlayerAI:
 
         if onMap((xP,yP+1), self.map):
             c = self.map[yP+1][xP+1] if goingRight else self.map[yP+1][xP-1]
+            cVertical1 = self.map[yP][xP+1] if goingRight else self.map[yP][xP-1]
+            cVertical2 = self.map[yP][xP+2] if goingRight else self.map[yP][xP-2]
 
+            hasVerticalElevator = cVertical1 == 'o' or cVertical1 == 'O' or cVertical2 == 'o' or cVertical2 == 'O'
             elevatorInFront = c == 'o' or c == 'O'
             playerOnFloor = self.isFloor((xP,yP+1))
 
             # check if there is an elevator path
-            if elevatorInFront and playerOnFloor:
+            if (elevatorInFront or hasVerticalElevator) and playerOnFloor:
                 
                 # check if elevator is in bording zone
-                elPSx , elPSy = map_to_screen((xP + 1, yP + 1)) # Elevator path start
-                drawCircle_noOffset((elPSx, elPSy), self.screen, (0,0,255))
-                drawCircle_noOffset((elPSx + 80, elPSy), self.screen, (0,0,255))
+                # Elevator path start
+                elPSx , elPSy = map_to_screen((xP + 1, yP + 1)) if goingRight else map_to_screen((xP - 1, yP + 1))
+
+                drawCircle_noOffset((elPSx+40, elPSy), self.screen, (0,0,255))
+                drawCircle_noOffset((elPSx+80, elPSy), self.screen, (0,0,255))
                 drawCircle_noOffset((elPSx, elPSy-40), self.screen, (0,255,0))
                 drawCircle_noOffset((elPSx, elPSy+40), self.screen, (0,255,0))
+
                 for elevator in elevatorgroup:
                     elx, ely = elevator.rect.center
-                    inBordingZone = elPSx < elx < elPSx + 80 and elPSy - 40 < ely < elPSy + 40
-                    if inBordingZone:
+                    elevatorGoingRight = elevator.xmove > 0
+                    elevatorGoingDown = elevator.ymove > 0
+                    inBordingZone = elPSx+40 < elx < elPSx + 80 if goingRight else elPSx-40 < elx < elPSx
+                    inBordingZone = inBordingZone and elPSy - 40 < ely < elPSy + 40
+
+                    canGo = not elevatorGoingRight and goingRight or elevatorGoingRight and not goingRight
+
+                    print("goingRight ", goingRight)
+                    print("elevatorGoingRight ", elevatorGoingRight)
+                    print("elevatorGoingDown ", elevatorGoingDown)
+
+                    if inBordingZone and (canGo or elevatorGoingDown):
                         drawCircle_noOffset((elx, elx), self.screen, (0,0,0))
                         self.state = State.ON_ELEVATOR
-                        self.player.update_ia_frame = 50
+                        self.player.update_ia_frame = 50 if goingRight else 100 # move forward time
+                        self.player.update_ia_frame = 100 if elevatorGoingDown else self.player.update_ia_frame # move forward time
+                        print("self.player.update_ia_frame ", self.player.update_ia_frame)
                         return True
                     else:
                         self.player.xmove = 0
