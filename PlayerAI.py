@@ -18,6 +18,8 @@ class PlayerAI:
         self.isJumping = False
         self.moves = 0
         self.onElevator = None
+        self.wantedPosition = None
+        self.direction = None
         
     def random(self):
         action = random.randint(0, 10)
@@ -28,7 +30,6 @@ class PlayerAI:
 
     def updateBehaviour(self,gemGroup,doorGroup,firegroup, wallgroup, monstergroup, elevatorgroup):
         if self.state == State.SEARCHING:
-            #print("state : Searching") 
             if(len(gemGroup) < 1):
                 return self.iaMoving(self.findDoor(doorGroup),firegroup, monstergroup, elevatorgroup)
             else:
@@ -49,6 +50,7 @@ class PlayerAI:
         elif self.state == State.ADJUST:
             print("state : Adjusting") 
             self.adjust(wallgroup)
+
         elif self.state == State.ON_ELEVATOR:
             self.player.update_ia_frame = 10
             canExit = self.checkToExitElevator()
@@ -59,16 +61,27 @@ class PlayerAI:
             else:
                 self.player.xmove = 0
 
-            
         elif self.state == State.DELAY_BEFORE_JUMP:
             self.moves -= 1
             if self.moves == 0:
                 self.jump()
 
+        elif self.state == State.DELAY_MONSTER:
+            if self.wantedPosition == screen_to_map(self.player.rect.center):
+                self.player.xmove == direction
+                self.state == State.SEARCHING
+
     def delayJump(self, moves, speed):
         self.moves = moves
         self.player.update_ia_frame = speed
         self.state = State.DELAY_BEFORE_JUMP
+    
+    def delayMonster(self, position, direction, speed):
+        self.direction = direction
+        self.player.xmove == -1 * direction
+        self.wantedPosition = position
+        self.player.update_ia_frame = 10
+        self.state = State.DELAY_MONSTER
 
     def adjust(self, wallgroup):
         playerPos = (self.player.rect.x, self.player.rect.y)  
@@ -187,10 +200,6 @@ class PlayerAI:
             foundHorizontalElevatorWithGap =  (cHorizontal2 == 'o' or cHorizontal2 == 'O') and not foundHorizontalElevator and not cHorizontal1_isFloor
             foundVerticalElevator = cVertical1 == 'o' or cVertical1 == 'O' or cVertical2 == 'o' or cVertical2 == 'O'
 
-            print("foundHorizontalElevator ", foundHorizontalElevator)
-            print("foundHorizontalElevatorWithGap ", foundHorizontalElevatorWithGap)
-            print("foundVerticalElevator ", foundVerticalElevator)
-
             playerOnFloor = self.isFloor((xP,yP+1))
 
             # check if elevator is in bording zone
@@ -241,8 +250,6 @@ class PlayerAI:
                 for elevator in elevatorgroup:
                     elx, ely = elevator.rect.center
                     drawCircle((elx, ely), self.screen, (0,255,0))
-                    print(len(elevatorgroup))
-                    print(elevator.rect.center)
                     elevatorGoingRight = elevator.xmove > 0
                     inBordingZone = elPSx+40 < elx < elPSx + 80 if goingRight else elPSx-40 < elx < elPSx
                     inBordingZone = inBordingZone and elPSy - 40 < ely < elPSy + 40
@@ -280,14 +287,14 @@ class PlayerAI:
 
     def checkToExitElevator(self):
         xE, yE = screen_to_map(self.onElevator.rect.center)
-        print(self.player.elevator == self.onElevator)
-        print(self.map[yE][xE+1] )
         return self.map[yE][xE+1] != 'o'and self.map[yE][xE+1] != 'O'
 
     def checkMonsters(self, nextMove, monstergroup):
         x, y = screen_to_map(nextMove)
         xPS, yPS = (self.player.rect.centerx, self.player.rect.centery)
         xP, yP = screen_to_map((xPS, yPS)) 
+
+        self.player.xmove == 1 if xP < x else -1
 
         # uses sensors to detect monsters
         leftSensor = (self.player.rect.centerx - 40, self.player.rect.centery)
@@ -319,13 +326,17 @@ class PlayerAI:
                 xFS, yFS = xPS+100, yPS+40
                 xF, yF = screen_to_map((xFS, yFS)) 
                 if jump and onMap((xF, yF), self.map) and not self.isFloor((xF,yF)):
+                    print("here")
+                    #self.delayMonster((xPS - 40, yPS), self.player.xmove, 1)
                     self.player.rect.centerx, self.player.rect.centery = xPS - 40, yPS
+                    self.player.xmove == 0
                     return True
             else:
                 xFS, yFS = xP-100, yP+40
                 xF, yF = screen_to_map((xFS, yFS)) 
                 if jump and onMap((xF, yF), self.map) and not self.isFloor((xF,yF)):
                     self.player.rect.centerx, self.player.rect.centery = xPS + 20, yPS
+                    self.player.xmove == 0
                     return True
 
             if jump: 
@@ -415,9 +426,8 @@ class PlayerAI:
             for monster in monstergroup:  
                 xMS, yMS = screen_to_map(monster.rect.topleft)        
                 xM, yM = monster.rect.center
-                print(plataformEdge[0], xM, xES)
                 onSaveDistance = plataformEdge[0] < xM < xES if goingRight else xES < xM < plataformEdge[0] + 40
-                print(onSaveDistance)
+                print(onSaveDistance, xEM, yEM, xMS, yMS, screen_to_map((xES, yES)))
                 if onSaveDistance and yMS == yEM:
                     return False
 
@@ -446,7 +456,7 @@ class PlayerAI:
                 index -= 1
 
             if not willJump and ((self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True):
-                if(self.checkMonstersBeforeJump(playerPos, monstergroup, nextMove)):
+                if(self.checkMonstersBeforeJump(playerPos, monstergroup, map_to_screen((xP+1, yP-2)))):
                     #self.jumpSound.play()
                     self.player.jump = -5.2
                     self.player.climbMove = 0
@@ -748,4 +758,5 @@ class State(Enum):
     ADJUST = 3
     ON_ELEVATOR = 4
     DELAY_BEFORE_JUMP = 5
+    DELAY_MONSTER = 6
     #LADDER = 3
