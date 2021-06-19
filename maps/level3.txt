@@ -1,8 +1,8 @@
 bbbbbbbbbbbbbbbbbbbbbbbbbb
-b.v......................b
-b.V.......vvvvvVvvvv.....b
-b.v.....m.....c....c.....b
-bcv..oaaaaa..aaa..aaaa...b
+b........................b
+b.........vvvvvVvvvv.....b
+b.......m.....c....c.....b
+bc...oaaaaa..aaa..aaaa...b
 bal..o...................b
 b.l..O...................b
 b.l..o.......cf....c.....b

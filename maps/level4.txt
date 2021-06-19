@@ -6,7 +6,7 @@ b..m.c....ooOoo.aaa..laaab
 b..aaaaaal...........l...b
 b........l......laaaaaa..b
 b........l...f..l........b
-b....cm..aaaaaaaa..cm....b
+b....c...aaaaaaaa..cm....b
 b..alaaa..........aalaa..b
 b..cl...............lc...b
 b..aaalaa........aaaala..b

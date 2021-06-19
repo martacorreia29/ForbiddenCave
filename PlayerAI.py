@@ -29,7 +29,6 @@ class PlayerAI:
             player.xmove = random.randint(-1, 1)
 
     def updateBehaviour(self,gemGroup,doorGroup,firegroup, wallgroup, monstergroup, elevatorgroup):
-        print(self.state)
         if self.state == State.SEARCHING:
             if(len(gemGroup) < 1):
                 return self.iaMoving(self.findDoor(doorGroup),firegroup, monstergroup, elevatorgroup)
@@ -53,13 +52,12 @@ class PlayerAI:
             self.adjust(wallgroup)
 
         elif self.state == State.ON_ELEVATOR:
-            if self.player.elevator:                
+            if self.onElevator:                
                 self.player.update_ia_frame = 10
                 canExit = self.checkToExitElevator()
                 if canExit:
-                    #self.jump() # TODO: can't jump
+                    self.player.xmove = 1 if self.direction == "right" else -1
                     self.state = State.JUMPING
-                    self.player.xmove = 1
                 else:
                     self.player.xmove = 0
             else:
@@ -193,6 +191,7 @@ class PlayerAI:
         xS, yS = playerPos
 
         goingRight = x > xP # if next move is on the right then its going right
+        self.direction = "right" if goingRight else "left"
 
         onMaps = onMap((xP+1,yP+1), self.map) and onMap((xP+2,yP+1), self.map) and onMap((xP+1,yP), self.map) and onMap((xP+2,yP), self.map) if goingRight else \
              onMap((xP-1,yP+1), self.map) and onMap((xP-2,yP+1), self.map) and  onMap((xP-1,yP), self.map) and onMap((xP-2,yP), self.map)
@@ -215,16 +214,15 @@ class PlayerAI:
                 # Elevator path start
                 elPSx , elPSy = map_to_screen((xP + 1, yP + 1)) if goingRight else map_to_screen((xP - 1, yP + 1))
 
-                print(abs(elPSx - xS))
                 if not goingRight and abs(elPSx - xS) > 45:
                     return False
                 elif goingRight and abs(elPSx - xS) > 20:
                     return False
 
-                # drawCircle_noOffset((elPSx+40, elPSy), self.screen, (0,0,255))
-                # drawCircle_noOffset((elPSx+80, elPSy), self.screen, (0,0,255))
-                # drawCircle_noOffset((elPSx, elPSy-40), self.screen, (0,255,0))
-                # drawCircle_noOffset((elPSx, elPSy+40), self.screen, (0,255,0))
+                drawCircle_noOffset((elPSx-80, elPSy), self.screen, (0,0,255))
+                drawCircle_noOffset((elPSx-40, elPSy), self.screen, (0,0,255))
+                drawCircle_noOffset((elPSx, elPSy-40), self.screen, (0,255,0))
+                drawCircle_noOffset((elPSx, elPSy+40), self.screen, (0,255,0))
 
 
                 for elevator in elevatorgroup:
@@ -239,6 +237,7 @@ class PlayerAI:
                         #self.player.rect = self.player.rect.move(-40, 0)
                         self.jump()
                         self.state = State.ON_ELEVATOR
+                        self.onElevator = elevator
                         self.player.update_ia_frame = 100 if goingRight else 100 # move forward time
                         return True
                 self.player.xmove = 0     
@@ -248,10 +247,10 @@ class PlayerAI:
                 # Elevator path start
                 elPSx , elPSy = map_to_screen((xP + 1, yP + 1)) if goingRight else map_to_screen((xP - 1, yP + 1))
 
-                drawCircle_noOffset((elPSx+40, elPSy), self.screen, (0,0,255))
-                drawCircle_noOffset((elPSx+80, elPSy), self.screen, (0,0,255))
-                drawCircle_noOffset((elPSx, elPSy-40), self.screen, (0,255,0))
-                drawCircle_noOffset((elPSx, elPSy+40), self.screen, (0,255,0))
+                #drawCircle_noOffset((elPSx+40, elPSy), self.screen, (0,0,255))
+                #drawCircle_noOffset((elPSx+80, elPSy), self.screen, (0,0,255))
+                #drawCircle_noOffset((elPSx, elPSy-40), self.screen, (0,255,0))
+                #drawCircle_noOffset((elPSx, elPSy+40), self.screen, (0,255,0))
 
 
                 for elevator in elevatorgroup:
@@ -265,6 +264,7 @@ class PlayerAI:
 
                     if inBordingZone and canGo:
                         self.state = State.ON_ELEVATOR
+                        self.onElevator = elevator
                         self.player.update_ia_frame = 60 if goingRight else 60 # move forward time
                         return True
                 self.player.xmove = 0     
@@ -283,6 +283,7 @@ class PlayerAI:
 
                     if inBordingZone and elevatorGoingDown:
                         self.state = State.ON_ELEVATOR
+                        self.onElevator = elevator
                         self.player.update_ia_frame = 50 if goingRight else 100 # move forward time
                         self.player.update_ia_frame = 100 if elevatorGoingDown else self.player.update_ia_frame # move forward time
                         return True
@@ -291,9 +292,9 @@ class PlayerAI:
         return True
 
     def checkToExitElevator(self):
-        xE, yE = screen_to_map(self.player.elevator.rect.center)
-        print(self.map[yE][xE+1] )
-        return self.map[yE][xE+1] != 'o'and self.map[yE][xE+1] != 'O'
+        xE, yE = screen_to_map(self.onElevator.rect.center)
+        return (self.direction == "right" and self.map[yE][xE+1] != 'o'and self.map[yE][xE+1] != 'O') \
+            or (self.direction == "left" and self.map[yE][xE-1] != 'o'and self.map[yE][xE-1] != 'O')
 
     def checkMonsters(self, nextMove, monstergroup):
         x, y = screen_to_map(nextMove)
@@ -314,7 +315,7 @@ class PlayerAI:
             
             # i 0>
             if monster.xmove > 0 and monster.rect.centerx > xP and self.player.xmove == 1 and \
-            abs(monster.rect.centerx - rightSensor[0]) < 20 and abs(monster.rect.centery - rightSensor[1]) < 5:
+            abs(monster.rect.centerx - rightSensor[0]) < 5 and abs(monster.rect.centery - rightSensor[1]) < 5:
                 jump = True
 
             # i <0 
@@ -332,7 +333,6 @@ class PlayerAI:
                 xFS, yFS = xPS+100, yPS+40
                 xF, yF = screen_to_map((xFS, yFS)) 
                 if jump and onMap((xF, yF), self.map) and not self.isFloor((xF,yF)):
-                    print("here")
                     #self.delayMonster((xPS - 40, yPS), self.player.xmove, 1)
                     self.player.rect.centerx, self.player.rect.centery = xPS - 40, yPS
                     self.player.xmove == 0
@@ -345,7 +345,7 @@ class PlayerAI:
                     self.player.xmove == 0
                     return True
 
-            if jump: 
+            if jump:
                 print("sensor monster")
                 self.player.update_ia_frame = 10
                 self.state = State.JUMPING
@@ -496,10 +496,10 @@ class PlayerAI:
             if self.player.canClimb:
                 self.player.doClimb = True
                 self.player.climbMove = -1
-                '''if self.map[int(y)][int(x)] == 'l':
+                if self.map[int(y)][int(x)] == 'l':
                     xM, yM = screen_to_map(playerPos2)
                     xS, yS = map_to_screen((xM, yM))
-                    self.player.rect.centerx, self.player.rect.centery = xS + 15, yS'''
+                    self.player.rect.centerx, self.player.rect.centery = xS + 15, yS
                 print("escalar") 
           
     def isFloor(self, point):
