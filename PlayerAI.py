@@ -462,7 +462,8 @@ class PlayerAI:
                 index -= 1
 
             if not willJump and ((self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True):
-                if(self.checkMonstersBeforeJump(playerPos, monstergroup, map_to_screen((xP+1, yP-2)))):
+                point = (xP+1, yP-2) if self.player.xmove == 1 else (xP-1, yP-2)
+                if(self.checkMonstersBeforeJump(playerPos, monstergroup, map_to_screen(point))):
                     #self.jumpSound.play()
                     self.player.jump = -5.2
                     self.player.climbMove = 0
