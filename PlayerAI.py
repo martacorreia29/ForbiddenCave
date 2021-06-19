@@ -55,8 +55,8 @@ class PlayerAI:
                 canExit = self.checkToExitElevator()
                 if canExit:
                     self.player.xmove = 1
-                    self.jump() # TODO: can't jump
                     self.state = State.SEARCHING
+                    self.jump() # TODO: can't jump
                 else:
                     self.player.xmove = 0
             else:
@@ -97,7 +97,7 @@ class PlayerAI:
             self.player.doClimb = False
             self.player.doElevator = False
             self.player.elevator = None
-            print("jump")
+            print("jump : " , self.player.jump)
           
     def findGem(self, gemGroup):
         playerPos = (self.player.rect.centerx, self.player.rect.centery)
@@ -179,7 +179,9 @@ class PlayerAI:
 
         goingRight = x > xP # if next move is on the right then its going right
 
-        if onMap((xP,yP+1), self.map):
+        onMaps = onMap((xP+1,yP+1), self.map) and onMap((xP+2,yP+1), self.map) and onMap((xP+1,yP), self.map) and onMap((xP+2,yP), self.map) if goingRight else \
+             onMap((xP-1,yP+1), self.map) and onMap((xP-2,yP+1), self.map) and  onMap((xP-1,yP), self.map) and onMap((xP-2,yP), self.map)
+        if onMaps :
             cHorizontal1 = self.map[yP+1][xP+1] if goingRight else self.map[yP+1][xP-1]
             cHorizontal2 = self.map[yP+1][xP+2] if goingRight else self.map[yP+1][xP-2]
             cVertical1 = self.map[yP][xP+1] if goingRight else self.map[yP][xP-1]
