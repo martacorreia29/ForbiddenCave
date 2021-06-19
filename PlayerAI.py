@@ -17,12 +17,7 @@ class PlayerAI:
         self.state = State.SEARCHING
         self.isJumping = False
         self.moves = 0
-<<<<<<< HEAD
-        self.onElevator = None
-        self.wantedPosition = None
-        self.direction = None
-=======
->>>>>>> 0f2c86af7aba908eddbfae24027375b18e47e5e1
+        self.direction = self.player.xmove
         
     def random(self):
         action = random.randint(0, 10)
@@ -32,7 +27,6 @@ class PlayerAI:
             player.xmove = random.randint(-1, 1)
 
     def updateBehaviour(self,gemGroup,doorGroup,firegroup, wallgroup, monstergroup, elevatorgroup):
-        print(self.state)
         if self.state == State.SEARCHING:
             if(len(gemGroup) < 1):
                 return self.iaMoving(self.findDoor(doorGroup),firegroup, monstergroup, elevatorgroup)
@@ -61,9 +55,11 @@ class PlayerAI:
                 canExit = self.checkToExitElevator()
                 if canExit:
                     self.player.xmove = 1
+                    self.direction = self.player.xmove
                     self.jump() # TODO: can't jump
                     self.state = State.SEARCHING
                 else:
+                    self.direction = self.player.xmove if self.player.xmove != 0 else self.direction
                     self.player.xmove = 0
             else:
                 self.state = State.SEARCHING
@@ -74,21 +70,13 @@ class PlayerAI:
                 self.jump()
 
         elif self.state == State.DELAY_MONSTER:
-            if self.wantedPosition == screen_to_map(self.player.rect.center):
-                self.player.xmove == direction
-                self.state == State.SEARCHING
+            self.player.update_ia_frame = 30
+            self.state = State.SEARCHING
 
     def delayJump(self, moves, speed):
         self.moves = moves
         self.player.update_ia_frame = speed
         self.state = State.DELAY_BEFORE_JUMP
-    
-    def delayMonster(self, position, direction, speed):
-        self.direction = direction
-        self.player.xmove == -1 * direction
-        self.wantedPosition = position
-        self.player.update_ia_frame = 10
-        self.state = State.DELAY_MONSTER
 
     def adjust(self, wallgroup):
         playerPos = (self.player.rect.x, self.player.rect.y)  
@@ -191,7 +179,7 @@ class PlayerAI:
             return True
         x, y = screen_to_map(nextMove)
         playerPos = self.player.rect.center
-        drawCircle_noOffset(playerPos, self.screen, (0,0,255))
+        #drawCircle_noOffset(playerPos, self.screen, (0,0,255))
         xP, yP = screen_to_map(playerPos) 
         xS, yS = playerPos
 
@@ -227,7 +215,6 @@ class PlayerAI:
                 # drawCircle_noOffset((elPSx, elPSy-40), self.screen, (0,255,0))
                 # drawCircle_noOffset((elPSx, elPSy+40), self.screen, (0,255,0))
 
-
                 for elevator in elevatorgroup:
                     elx, ely = elevator.rect.center
                     elevatorGoingRight = elevator.xmove > 0
@@ -242,6 +229,7 @@ class PlayerAI:
                         self.state = State.ON_ELEVATOR
                         self.player.update_ia_frame = 100 if goingRight else 100 # move forward time
                         return True
+                self.direction = self.player.xmove if self.player.xmove != 0 else self.direction
                 self.player.xmove = 0     
                 return False
 
@@ -249,15 +237,15 @@ class PlayerAI:
                 # Elevator path start
                 elPSx , elPSy = map_to_screen((xP + 1, yP + 1)) if goingRight else map_to_screen((xP - 1, yP + 1))
 
-                drawCircle_noOffset((elPSx+40, elPSy), self.screen, (0,0,255))
-                drawCircle_noOffset((elPSx+80, elPSy), self.screen, (0,0,255))
-                drawCircle_noOffset((elPSx, elPSy-40), self.screen, (0,255,0))
-                drawCircle_noOffset((elPSx, elPSy+40), self.screen, (0,255,0))
+                #drawCircle_noOffset((elPSx+40, elPSy), self.screen, (0,0,255))
+                #drawCircle_noOffset((elPSx+80, elPSy), self.screen, (0,0,255))
+                #drawCircle_noOffset((elPSx, elPSy-40), self.screen, (0,255,0))
+                #drawCircle_noOffset((elPSx, elPSy+40), self.screen, (0,255,0))
 
 
                 for elevator in elevatorgroup:
                     elx, ely = elevator.rect.center
-                    drawCircle((elx, ely), self.screen, (0,255,0))
+                    #drawCircle((elx, ely), self.screen, (0,255,0))
                     elevatorGoingRight = elevator.xmove > 0
                     inBordingZone = elPSx+40 < elx < elPSx + 80 if goingRight else elPSx-40 < elx < elPSx
                     inBordingZone = inBordingZone and elPSy - 40 < ely < elPSy + 40
@@ -300,31 +288,32 @@ class PlayerAI:
         x, y = screen_to_map(nextMove)
         xPS, yPS = (self.player.rect.centerx, self.player.rect.centery)
         xP, yP = screen_to_map((xPS, yPS)) 
-
-        self.player.xmove == 1 if xP < x else -1
+        self.player.xmove == self.direction
+        print("check Monsters")
 
         # uses sensors to detect monsters
         leftSensor = (self.player.rect.centerx - 40, self.player.rect.centery)
         rightSensor = (self.player.rect.centerx + 40, self.player.rect.centery)
         for monster in monstergroup:
+            print(xPS, monster.rect.centerx, leftSensor, monster.xmove > 0, self.player.xmove)
             jump = False
             # <0 <i
-            if monster.xmove < 0 and monster.rect.centerx < xP and self.player.xmove == -1 and \
+            if monster.xmove < 0 and monster.rect.centerx < xPS and self.player.xmove == -1 and \
             abs(monster.rect.centerx - leftSensor[0]) < 5 and abs(monster.rect.centery - leftSensor[1]) < 5:
                 jump = True
             
-            # i 0>
-            if monster.xmove > 0 and monster.rect.centerx > xP and self.player.xmove == 1 and \
+            # i> 0>
+            if monster.xmove > 0 and monster.rect.centerx > xPS and self.player.xmove == 1 and \
             abs(monster.rect.centerx - rightSensor[0]) < 20 and abs(monster.rect.centery - rightSensor[1]) < 5:
                 jump = True
 
-            # i <0 
-            if monster.xmove < 0 and monster.rect.centerx > xP and self.player.xmove == 1 and \
+            # i> <0 
+            if monster.xmove < 0 and monster.rect.centerx > xPS and self.player.xmove == 1 and \
             abs(monster.rect.centerx - rightSensor[0]) < 40 and abs(monster.rect.centery - rightSensor[1]) < 5:
                 jump = True            
 
-            # 0> i
-            if monster.xmove > 0 and monster.rect.centerx < xP and self.player.xmove == -1 and \
+            # 0> <i
+            if monster.xmove > 0 and monster.rect.centerx < xPS and self.player.xmove == -1 and \
             abs(monster.rect.centerx - leftSensor[0]) < 40 and abs(monster.rect.centery - leftSensor[1]) < 5:
                 jump = True
 
@@ -333,8 +322,7 @@ class PlayerAI:
                 xFS, yFS = xPS+100, yPS+40
                 xF, yF = screen_to_map((xFS, yFS)) 
                 if jump and onMap((xF, yF), self.map) and not self.isFloor((xF,yF)):
-                    print("here")
-                    #self.delayMonster((xPS - 40, yPS), self.player.xmove, 1)
+                    print("ahahah")
                     self.player.rect.centerx, self.player.rect.centery = xPS - 40, yPS
                     self.player.xmove == 0
                     return True
@@ -342,6 +330,7 @@ class PlayerAI:
                 xFS, yFS = xP-100, yP+40
                 xF, yF = screen_to_map((xFS, yFS)) 
                 if jump and onMap((xF, yF), self.map) and not self.isFloor((xF,yF)):
+                    print("ahahah2")
                     self.player.rect.centerx, self.player.rect.centery = xPS + 20, yPS
                     self.player.xmove == 0
                     return True
@@ -408,12 +397,15 @@ class PlayerAI:
                     # check for monsters
                     if(self.checkMonstersBeforeJump(playerPos, monstergroup, nextMove1)):
                         self.player.xmove = 1 if xP < x else -1
+                        self.direction = self.player.xmove
                         self.state = State.ADJUST
                         print("adjust")
                         self.player.doClimb = False
                         self.player.climbMove = 0
                     else:
+                        self.direction = self.player.xmove if self.player.xmove != 0 else self.direction
                         self.player.xmove = 0
+                         
                     return False
                 if xx >= xP + 3:
                     break
@@ -433,20 +425,77 @@ class PlayerAI:
             for monster in monstergroup:  
                 xMS, yMS = screen_to_map(monster.rect.topleft)        
                 xM, yM = monster.rect.center
-                onSaveDistance = plataformEdge[0] < xM < xES if goingRight else xES < xM < plataformEdge[0] + 40
-                print(onSaveDistance, xEM, yEM, xMS, yMS, screen_to_map((xES, yES)))
-                if onSaveDistance and yMS == yEM:
+                onSafeDistance = plataformEdge[0] < xM < xES if goingRight else xES < xM < plataformEdge[0] + 40
+                if onSafeDistance and yMS == yEM:
                     return False
 
             print("Monster jump")
-            #self.player.xmove = 1 if goingRight else -1
             return True
+
+    def checkLanding(self, monstergroup):
+        xPS, yPS = self.player.rect.center
+        xP, yP = screen_to_map((xPS, yPS))
+        goingRight = True if self.player.xmove == 1 else False
+
+        # floor
+        sum = 40 #if self.player.xmove == 1 else 40
+        xFS, yFS = xPS+100*(self.player.xmove), yPS+40  
+        xF, yF = screen_to_map((xFS, yFS)) 
+        if (onMap((xF, yF), self.map) and not self.isFloor((xF,yF))):
+            print("no floor")
+            self.player.rect.centerx, self.player.rect.centery = xPS - (sum*(self.player.xmove)), yPS
+            self.direction = self.player.xmove if self.player.xmove != 0 else self.direction
+            self.player.rect.centerx, self.player.rect.centery = xPS + 40*self.player.xmove, yPS
+            #self.player.xmove = 0
+            return False
+
+        print("hasFloor")
+
+        # find end of platform
+        i = 0
+        edge = None
+        while(not edge and onMap((xP + i, yP + 1), self.map)):
+            if(self.isVoid((xP + i, yP+1)) or self.map[int(yP+1)][int(xP + i)] == 'b'):
+                edge = (xP+i, yP)
+            i = i + 1 if goingRight else i - 1
+        xOES, yOES = map_to_screen(edge)
+
+        # if theres a monster ahead
+        for monster in monstergroup:  
+            xM, yM = monster.rect.center
+            xMM, yMM = screen_to_map((xM, yM))
+            if (xPS < xM < xOES if goingRight else xOES < xM < xPS) and yM == yPS:
+                print("in platform")
+                distanceToEdge = abs(edge[0]-xMM)
+
+                directionMonster = -1 if monster.xmove < 0 else 1
+                
+                # landing
+                xLS, yLS =  xPS+(100*directionMonster), yPS
+                xLM, yLM = screen_to_map((xLS, yLS)) 
+
+                if directionMonster != self.player.xmove: 
+                    xMN, yMN = xM + (20 * directionMonster), yM                    
+                else:
+                    xMN, yMN = xM + 40*distanceToEdge*directionMonster + 40*distanceToEdge*directionMonster*(-1) + 20*directionMonster*(-1), yM                     
+                
+                xMNM, yMNM = screen_to_map((xMN, yMN))
+
+                # checks for floor afer jump
+                if (directionMonster == 1 and xMNM <= xLM) or (directionMonster == -1 and xMNM >= xLM): 
+                    print("stop")
+                    self.direction = self.player.xmove if self.player.xmove != 0 else self.direction
+                    #self.player.xmove = 0
+                    self.player.rect.centerx, self.player.rect.centery = xPS + 40*self.player.xmove, yPS
+                    return False
+        return True
 
     def movePlayer(self, playerPos, nextMove, index, path, monstergroup):
         x, y = screen_to_map(nextMove)
         xP, yP = screen_to_map(playerPos)  
         # player center
         playerPos2 = (self.player.rect.centerx, self.player.rect.centery) 
+
         # jump
         if playerPos[1] > nextMove[1]:
             willJump = False
@@ -463,26 +512,31 @@ class PlayerAI:
                 index -= 1
 
             if not willJump and ((self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True):
-                if(self.checkMonstersBeforeJump(playerPos, monstergroup, map_to_screen((xP+1, yP-2)))):
+                point = (xP+1, yP-2) if self.player.xmove == 1 else (xP-1, yP-2)
+                if(self.checkMonstersBeforeJump(playerPos, monstergroup, map_to_screen(point))): #and self.checkLanding(monstergroup):
                     #self.jumpSound.play()
                     self.player.jump = -5.2
                     self.player.climbMove = 0
                     self.player.doClimb = False
                     self.player.doElevator = False
                     self.player.elevator = None
+                    self.player.update_ia_frame = 10
                     print("salto astar")
                 else:
+                    self.direction = self.player.xmove if self.player.xmove != 0 else self.direction
                     self.player.xmove = 0
                     return False
                 
         # left 
         elif playerPos[0] > nextMove[0]:
             self.player.xmove = -1
+            self.direction = self.player.xmove
             print("esquerda")
 
         # right
         elif playerPos[0] < nextMove[0]: 
             self.player.xmove = 1
+            self.direction = self.player.xmove
             print("direita")
             
         # climb down
@@ -569,9 +623,6 @@ def aStar(point, goal, textmap, screen):
         node = priorityQueue[0]
         priorityQueue.remove(node)
         currentTile = node.point
-
-        ''' Path discovery visualization
-        #drawCircle(currentTile, screen)'''
 
         if currentTile == goal:
             # we found the goal
