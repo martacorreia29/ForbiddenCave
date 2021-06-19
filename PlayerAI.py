@@ -144,7 +144,7 @@ class PlayerAI:
         xP, yP = screen_to_map(playerPos) 
         xS, yS = playerPos
 
-        # uses sensors to detect fire
+        # uses sensors to detect monsters
         leftSensor = (self.player.rect.centerx - 40, self.player.rect.centery)
         rightSensor = (self.player.rect.centerx + 40, self.player.rect.centery)
         for monster in monstergroup:
