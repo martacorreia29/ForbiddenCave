@@ -16,6 +16,8 @@ class PlayerAI:
         self.screen = screen
         self.state = State.SEARCHING
         self.isJumping = False
+        self.moves = 0
+        self.onElevator = None
         
     def random(self):
         action = random.randint(0, 10)
@@ -48,8 +50,25 @@ class PlayerAI:
             print("state : Adjusting") 
             self.adjust(wallgroup)
         elif self.state == State.ON_ELEVATOR:
-            self.player.xmove = 0
             self.player.update_ia_frame = 10
+            canExit = self.checkToExitElevator()
+            if canExit:
+                self.player.xmove = 1
+                self.jump()
+                self.state == State.SEARCHING
+            else:
+                self.player.xmove = 0
+
+            
+        elif self.state == State.DELAY_BEFORE_JUMP:
+            self.moves -= 1
+            if self.moves == 0:
+                self.jump()
+
+    def delayJump(self, moves, speed):
+        self.moves = moves
+        self.player.update_ia_frame = speed
+        self.state = State.DELAY_BEFORE_JUMP
 
     def adjust(self, wallgroup):
         playerPos = (self.player.rect.x, self.player.rect.y)  
@@ -149,24 +168,67 @@ class PlayerAI:
 
     def checkElevators(self, playerPos, nextMove, elevatorgroup):
         x, y = screen_to_map(nextMove)
+        playerPos = self.player.rect.center
+        drawCircle_noOffset(playerPos, self.screen, (0,0,255))
         xP, yP = screen_to_map(playerPos) 
         xS, yS = playerPos
 
         goingRight = x > xP # if next move is on the right then its going right
 
         if onMap((xP,yP+1), self.map):
-            c = self.map[yP+1][xP+1] if goingRight else self.map[yP+1][xP-1]
+            cHorizontal1 = self.map[yP+1][xP+1] if goingRight else self.map[yP+1][xP-1]
+            cHorizontal2 = self.map[yP+1][xP+2] if goingRight else self.map[yP+1][xP-2]
             cVertical1 = self.map[yP][xP+1] if goingRight else self.map[yP][xP-1]
             cVertical2 = self.map[yP][xP+2] if goingRight else self.map[yP][xP-2]
 
-            hasVerticalElevator = cVertical1 == 'o' or cVertical1 == 'O' or cVertical2 == 'o' or cVertical2 == 'O'
-            elevatorInFront = c == 'o' or c == 'O'
+            # check if there is an elevator path
+            cHorizontal1_isFloor = cHorizontal1 == 'a' or cHorizontal1 == 'b'
+            foundHorizontalElevator = cHorizontal1 == 'o' or cHorizontal1 == 'O'
+            foundHorizontalElevatorWithGap =  (cHorizontal2 == 'o' or cHorizontal2 == 'O') and not foundHorizontalElevator and not cHorizontal1_isFloor
+            foundVerticalElevator = cVertical1 == 'o' or cVertical1 == 'O' or cVertical2 == 'o' or cVertical2 == 'O'
+
+            print("foundHorizontalElevator ", foundHorizontalElevator)
+            print("foundHorizontalElevatorWithGap ", foundHorizontalElevatorWithGap)
+            print("foundVerticalElevator ", foundVerticalElevator)
+
             playerOnFloor = self.isFloor((xP,yP+1))
 
-            # check if there is an elevator path
-            if (elevatorInFront or hasVerticalElevator) and playerOnFloor:
-                
-                # check if elevator is in bording zone
+            # check if elevator is in bording zone
+            if foundHorizontalElevatorWithGap and playerOnFloor:
+                # Elevator path start
+                elPSx , elPSy = map_to_screen((xP + 1, yP + 1)) if goingRight else map_to_screen((xP - 1, yP + 1))
+
+                print(abs(elPSx - xS))
+                if not goingRight and abs(elPSx - xS) > 45:
+                    return False
+                elif goingRight and abs(elPSx - xS) > 20:
+                    return False
+
+                # drawCircle_noOffset((elPSx+40, elPSy), self.screen, (0,0,255))
+                # drawCircle_noOffset((elPSx+80, elPSy), self.screen, (0,0,255))
+                # drawCircle_noOffset((elPSx, elPSy-40), self.screen, (0,255,0))
+                # drawCircle_noOffset((elPSx, elPSy+40), self.screen, (0,255,0))
+
+
+                for elevator in elevatorgroup:
+                    elx, ely = elevator.rect.center
+                    elevatorGoingRight = elevator.xmove > 0
+                    inBordingZone = elPSx+80 < elx < elPSx + 120 if goingRight else elPSx-80 < elx < elPSx-40
+                    inBordingZone = inBordingZone and elPSy - 40 < ely < elPSy + 40
+
+                    canGo = not elevatorGoingRight and goingRight or elevatorGoingRight and not goingRight
+
+                    if inBordingZone and canGo:
+                        #self.player.rect = self.player.rect.move(-40, 0)
+                        self.jump()
+                        self.state = State.ON_ELEVATOR
+                        self.onElevator = elevator
+                        self.player.update_ia_frame = 100 if goingRight else 100 # move forward time
+                        return True
+                self.player.xmove = 0     
+                return False
+
+            elif foundHorizontalElevator and playerOnFloor:
                 # Elevator path start
                 elPSx , elPSy = map_to_screen((xP + 1, yP + 1)) if goingRight else map_to_screen((xP - 1, yP + 1))
 
@@ -175,30 +237,52 @@ class PlayerAI:
                 drawCircle_noOffset((elPSx, elPSy-40), self.screen, (0,255,0))
                 drawCircle_noOffset((elPSx, elPSy+40), self.screen, (0,255,0))
 
+
                 for elevator in elevatorgroup:
                     elx, ely = elevator.rect.center
+                    drawCircle((elx, ely), self.screen, (0,255,0))
+                    print(len(elevatorgroup))
+                    print(elevator.rect.center)
                     elevatorGoingRight = elevator.xmove > 0
-                    elevatorGoingDown = elevator.ymove > 0
                     inBordingZone = elPSx+40 < elx < elPSx + 80 if goingRight else elPSx-40 < elx < elPSx
                     inBordingZone = inBordingZone and elPSy - 40 < ely < elPSy + 40
 
                     canGo = not elevatorGoingRight and goingRight or elevatorGoingRight and not goingRight
 
-                    print("goingRight ", goingRight)
-                    print("elevatorGoingRight ", elevatorGoingRight)
-                    print("elevatorGoingDown ", elevatorGoingDown)
-
-                    if inBordingZone and (canGo or elevatorGoingDown):
-                        drawCircle_noOffset((elx, elx), self.screen, (0,0,0))
+                    if inBordingZone and canGo:
                         self.state = State.ON_ELEVATOR
+                        self.onElevator = elevator
+                        self.player.update_ia_frame = 60 if goingRight else 60 # move forward time
+                        return True
+                self.player.xmove = 0     
+                return False
+
+            elif foundVerticalElevator and playerOnFloor:
+                #TODO: Test and fix
+                # Elevator path start
+                elPSx , elPSy = map_to_screen((xP + 1, yP + 1)) if goingRight else map_to_screen((xP - 1, yP + 1))
+
+                for elevator in elevatorgroup:
+                    elx, ely = elevator.rect.center
+                    elevatorGoingDown = elevator.ymove > 0
+                    inBordingZone = elPSx < elx < elPSx + 80 if goingRight else elPSx-40 < elx < elPSx +40
+                    inBordingZone = inBordingZone and elPSy - 40 < ely < elPSy + 40
+
+                    if inBordingZone and elevatorGoingDown:
+                        self.state = State.ON_ELEVATOR
+                        self.onElevator = elevator
                         self.player.update_ia_frame = 50 if goingRight else 100 # move forward time
                         self.player.update_ia_frame = 100 if elevatorGoingDown else self.player.update_ia_frame # move forward time
-                        print("self.player.update_ia_frame ", self.player.update_ia_frame)
                         return True
-                    else:
-                        self.player.xmove = 0
-                        return False
+                self.player.xmove = 0     
+                return False
         return True
+
+    def checkToExitElevator(self):
+        xE, yE = screen_to_map(self.onElevator.rect.center)
+        print(self.player.elevator == self.onElevator)
+        print(self.map[yE][xE+1] )
+        return self.map[yE][xE+1] != 'o'and self.map[yE][xE+1] != 'O'
 
     def checkMonsters(self, nextMove, monstergroup):
         x, y = screen_to_map(nextMove)
@@ -663,4 +747,5 @@ class State(Enum):
     JUMPING = 2
     ADJUST = 3
     ON_ELEVATOR = 4
+    DELAY_BEFORE_JUMP = 5
     #LADDER = 3
