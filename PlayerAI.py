@@ -18,7 +18,6 @@ class PlayerAI:
         self.state = State.SEARCHING
         self.isJumping = False
         self.moves = 0
-        self.onElevator = None
         
     def random(self):
         action = random.randint(0, 10)
@@ -28,6 +27,7 @@ class PlayerAI:
             player.xmove = random.randint(-1, 1)
 
     def updateBehaviour(self,gemGroup,doorGroup,firegroup, wallgroup, monstergroup, elevatorgroup):
+        print(self.state)
         if self.state == State.SEARCHING:
             #print("state : Searching") 
             if(len(gemGroup) < 1):
@@ -51,15 +51,17 @@ class PlayerAI:
             print("state : Adjusting") 
             self.adjust(wallgroup)
         elif self.state == State.ON_ELEVATOR:
-            self.player.update_ia_frame = 10
-            canExit = self.checkToExitElevator()
-            if canExit:
-                self.player.xmove = 1
-                self.jump()
-                self.state == State.SEARCHING
+            if self.player.elevator:
+                self.player.update_ia_frame = 10
+                canExit = self.checkToExitElevator()
+                if canExit:
+                    self.player.xmove = 1
+                    self.jump() # TODO: can't jump
+                    self.state = State.SEARCHING
+                else:
+                    self.player.xmove = 0
             else:
-                self.player.xmove = 0
-
+                self.state = State.SEARCHING
             
         elif self.state == State.DELAY_BEFORE_JUMP:
             self.moves -= 1
@@ -165,6 +167,8 @@ class PlayerAI:
         continueChecks = self.movePlayer(playerPos, nextMove, index, path)
 
     def checkElevators(self, playerPos, nextMove, elevatorgroup):
+        if self.player.elevator:
+            return True
         x, y = screen_to_map(nextMove)
         playerPos = self.player.rect.center
         drawCircle_noOffset(playerPos, self.screen, (0,0,255))
@@ -220,7 +224,6 @@ class PlayerAI:
                         #self.player.rect = self.player.rect.move(-40, 0)
                         self.jump()
                         self.state = State.ON_ELEVATOR
-                        self.onElevator = elevator
                         self.player.update_ia_frame = 100 if goingRight else 100 # move forward time
                         return True
                 self.player.xmove = 0     
@@ -249,7 +252,6 @@ class PlayerAI:
 
                     if inBordingZone and canGo:
                         self.state = State.ON_ELEVATOR
-                        self.onElevator = elevator
                         self.player.update_ia_frame = 60 if goingRight else 60 # move forward time
                         return True
                 self.player.xmove = 0     
@@ -268,7 +270,6 @@ class PlayerAI:
 
                     if inBordingZone and elevatorGoingDown:
                         self.state = State.ON_ELEVATOR
-                        self.onElevator = elevator
                         self.player.update_ia_frame = 50 if goingRight else 100 # move forward time
                         self.player.update_ia_frame = 100 if elevatorGoingDown else self.player.update_ia_frame # move forward time
                         return True
@@ -277,8 +278,7 @@ class PlayerAI:
         return True
 
     def checkToExitElevator(self):
-        xE, yE = screen_to_map(self.onElevator.rect.center)
-        print(self.player.elevator == self.onElevator)
+        xE, yE = screen_to_map(self.player.elevator.rect.center)
         print(self.map[yE][xE+1] )
         return self.map[yE][xE+1] != 'o'and self.map[yE][xE+1] != 'O'
 
