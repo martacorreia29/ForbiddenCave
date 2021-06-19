@@ -986,7 +986,6 @@ class ForbiddenCave:
        self.screen = None
        self.background = None
        self.map = None
-       self.costs = None
        self.yoff = 40
        
        # Game state constants
@@ -1011,7 +1010,7 @@ class ForbiddenCave:
        # Level maps
        #self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                     #PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       self.maps = [PATH_MAPS + "levelTest.txt"]
+       self.maps = [PATH_MAPS + "level2.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1072,7 +1071,6 @@ class ForbiddenCave:
                    self.beginbonus -= 500   
 
                self.map = LevelMap(PATH_IMAGES + "wall.png", PATH_IMAGES + "wall1.png", PATH_IMAGES + "wall2.png", self.maps[self.levelcnt], self.yoff) 
-               self.costs = costs(self.map.textmap)
 
                # Process game
                result = self.doMainLoop()
@@ -1390,7 +1388,7 @@ class ForbiddenCave:
                ### Player AI
                ##################################################
                if not player.ai:
-                    player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, self.levelcnt), self.screen, self.costs)
+                    player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, self.levelcnt), self.screen)
                     
 
                self.frameCounter += 1
@@ -1559,28 +1557,6 @@ class ForbiddenCave:
            else:
                # Game over
                return self.GAMESTATE_DEAD
-
-def costs(map):
-    costMap = [[0]*len(map[0]) for i in range(len(map))]
-    i = -1
-    j = -1
-    for column in map:
-        j += 1
-        i = -1
-        for row in column:
-            i += 1
-            #if row == '.' and PlayerAI.onMap((i, j+1), map) and (map[j+1][i] == 'a' or map[j+1][i] == 'b'):
-             #   costMap[j][i] -= 10
-
-            #if row == '.' and PlayerAI.onMap((i,j+1), map) and map[j+1][i] != 'a': #and (PlayerAI.onMap((i,j+2), map) and map[j+2][i] != 'a')) \
-                #and (PlayerAI.onMap((i-1,j+1), map) and map[j+1][i-1] != 'a') and (PlayerAI.onMap((i+1,j+1), map) and map[j+1][i+1] != 'a'):
-                #costMap[j][i] += 999
-                #print("aa")
-
-            #if row == '.' and ((PlayerAI.onMap((i-1,j+1), map) and map[j+1][i-1] == 'a') or (PlayerAI.onMap((i+1,j+1), map) and map[j+1][i+1] == 'a')):
-                #costMap[j][i] -= 10000000
-
-    return costMap
 
 # Entrypoint
 def main():
