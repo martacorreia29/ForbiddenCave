@@ -10,7 +10,7 @@ b.l..oaaaa..aaaa..aaaal..b
 b.lc..................l..b
 b.aaa.................l..b
 b.........f...aaooOooaa..b
-b....m...aaaa............b
+b........aaaa............b
 b..laaaa......vvvvVvvvv..b
 b..l...........f....f....d
 bbbbbbbbbbbbbbbbbbbbbbbbbb

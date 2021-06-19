@@ -1314,7 +1314,8 @@ class ForbiddenCave:
        while self.lives > 0:           
            # Create player sprite 
            self.startSound.play()
-           initialPos = (40, 600) #PlayerAI.map_to_screen((23,14)) #(40, 600) 
+           initialPos = (40, 600)
+           #initialPos = PlayerAI.map_to_screen((23,14))
            player = Player(initialPos[0], initialPos[1], PATH_IMAGES + "playerLeft.png", PATH_IMAGES + "playerRight.png", PATH_IMAGES + "playerClimb.png", PATH_IMAGES + "scull.png", \
                            self.background, self.map)
            
