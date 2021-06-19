@@ -17,12 +17,9 @@ class PlayerAI:
         self.state = State.SEARCHING
         self.isJumping = False
         self.moves = 0
-<<<<<<< HEAD
         self.onElevator = None
         self.wantedPosition = None
         self.direction = None
-=======
->>>>>>> 0f2c86af7aba908eddbfae24027375b18e47e5e1
         
     def random(self):
         action = random.randint(0, 10)
@@ -56,13 +53,13 @@ class PlayerAI:
             self.adjust(wallgroup)
 
         elif self.state == State.ON_ELEVATOR:
-            if self.player.elevator:
+            if self.player.elevator:                
                 self.player.update_ia_frame = 10
                 canExit = self.checkToExitElevator()
                 if canExit:
+                    #self.jump() # TODO: can't jump
+                    self.state = State.JUMPING
                     self.player.xmove = 1
-                    self.state = State.SEARCHING
-                    self.jump() # TODO: can't jump
                 else:
                     self.player.xmove = 0
             else:

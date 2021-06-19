@@ -1010,7 +1010,7 @@ class ForbiddenCave:
        # Level maps
        #self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                     #PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       self.maps = [PATH_MAPS + "levelTest.txt"]
+       self.maps = [PATH_MAPS + "level3.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1384,17 +1384,6 @@ class ForbiddenCave:
                playergroup.update()
                firegroup.update()
 
-               ##################################################
-               ### Player AI
-               ##################################################
-               if not player.ai:
-                    player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, self.levelcnt), self.screen)
-                    
-
-               self.frameCounter += 1
-               if self.frameCounter == player.update_ia_frame:
-                    player.ai.updateBehaviour(gemgroup, doorgroup,firegroup, wallgroup, monstergroup, elevatorgroup)
-                    self.frameCounter = 0
          
 
                ##################################################
@@ -1520,6 +1509,18 @@ class ForbiddenCave:
                else:
                     player.doElevator = False
                     player.elevator = None
+
+               ##################################################
+               ### Player AI
+               ##################################################
+               if not player.ai:
+                    player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, self.levelcnt), self.screen)
+                    
+
+               self.frameCounter += 1
+               if self.frameCounter == player.update_ia_frame:
+                    player.ai.updateBehaviour(gemgroup, doorgroup,firegroup, wallgroup, monstergroup, elevatorgroup)
+                    self.frameCounter = 0
                     
            # end while loopstate = 1 loop
            self.lives -= 1 # deduct one life
