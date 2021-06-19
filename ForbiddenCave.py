@@ -1011,7 +1011,7 @@ class ForbiddenCave:
        # Level maps
        #self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                     #PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       self.maps = [PATH_MAPS + "level2.txt"]
+       self.maps = [PATH_MAPS + "levelTest.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1394,7 +1394,7 @@ class ForbiddenCave:
 
                self.frameCounter += 1
                if self.frameCounter == player.update_ia_frame:
-                    player.ai.updateBehaviour(gemgroup, doorgroup,firegroup, wallgroup, monstergroup)
+                    player.ai.updateBehaviour(gemgroup, doorgroup,firegroup, wallgroup, monstergroup, elevatorgroup)
                     self.frameCounter = 0
          
 

@@ -25,13 +25,13 @@ class PlayerAI:
         else:
             player.xmove = random.randint(-1, 1)
 
-    def updateBehaviour(self,gemGroup,doorGroup,firegroup, wallgroup, monstergroup):
+    def updateBehaviour(self,gemGroup,doorGroup,firegroup, wallgroup, monstergroup, elevatorgroup):
         if self.state == State.SEARCHING:
             #print("state : Searching") 
             if(len(gemGroup) < 1):
-                return self.iaMoving(self.findDoor(doorGroup),firegroup, monstergroup)
+                return self.iaMoving(self.findDoor(doorGroup),firegroup, monstergroup, elevatorgroup)
             else:
-                return  self.iaMoving(self.findGem(gemGroup),firegroup, monstergroup)
+                return  self.iaMoving(self.findGem(gemGroup),firegroup, monstergroup, elevatorgroup)
 
         elif self.state == State.JUMPING:
             playerPos = screen_to_map((self.player.rect.centerx, self.player.rect.centery))
@@ -48,6 +48,9 @@ class PlayerAI:
         elif self.state == State.ADJUST:
             print("state : Adjusting") 
             self.adjust(wallgroup)
+        elif self.state == State.ON_ELEVATOR:
+            self.player.xmove = 0
+
 
     def adjust(self, wallgroup):
         playerPos = (self.player.rect.x, self.player.rect.y)  
@@ -118,12 +121,15 @@ class PlayerAI:
         drawPath(path, self.screen)
         return path
 
-    def iaMoving(self, path, firegroup, monstergroup): 
+    def iaMoving(self, path, firegroup, monstergroup, elevatorgroup): 
         nextMove = path.nodes[len(path.nodes)-2]
         playerPos = (self.player.rect.x, self.player.rect.y)
         index = len(path.nodes)-2 
 
-        continueChecks = True      
+        continueChecks = True
+
+        continueChecks = self.checkElevators(playerPos, nextMove, elevatorgroup)
+        if not continueChecks: return      
         
         continueChecks = self.checkMonsters(playerPos, nextMove, monstergroup)
         if not continueChecks: return
@@ -138,6 +144,41 @@ class PlayerAI:
 
         # normal movements
         continueChecks = self.movePlayer(playerPos, nextMove, index, path)
+
+    def checkElevators(self, playerPos, nextMove, elevatorgroup):
+        x, y = screen_to_map(nextMove)
+        xP, yP = screen_to_map(playerPos) 
+        xS, yS = playerPos
+
+        goingRight = x > xP # if next move is on the right then its going right
+
+        if onMap((xP,yP+1), self.map):
+            c = self.map[yP+1][xP+1] if goingRight else self.map[yP+1][xP-1]
+
+            elevatorInFront = c == 'o' or c == 'O'
+            playerOnFloor = self.isFloor((xP,yP+1))
+
+            # check if there is an elevator path
+            if elevatorInFront and playerOnFloor:
+                
+                # check if elevator is in bording zone
+                elPSx , elPSy = map_to_screen((xP + 1, yP + 1)) # Elevator path start
+                drawCircle_noOffset((elPSx, elPSy), self.screen, (0,0,255))
+                drawCircle_noOffset((elPSx + 80, elPSy), self.screen, (0,0,255))
+                drawCircle_noOffset((elPSx, elPSy-40), self.screen, (0,255,0))
+                drawCircle_noOffset((elPSx, elPSy+40), self.screen, (0,255,0))
+                for elevator in elevatorgroup:
+                    elx, ely = elevator.rect.center
+                    inBordingZone = elPSx < elx < elPSx + 80 and elPSy - 40 < ely < elPSy + 40
+                    if inBordingZone:
+                        drawCircle_noOffset((elx, elx), self.screen, (0,0,0))
+                        self.state = State.ON_ELEVATOR
+                        self.player.update_ia_frame = 50
+                        return True
+                    else:
+                        self.player.xmove = 0
+                        return False
+        return True
 
     def checkMonsters(self, playerPos, nextMove, monstergroup):
         x, y = screen_to_map(nextMove)
@@ -567,8 +608,16 @@ def drawCircle(point, screen, color = (255,255,255)):
     pygame.display.flip()
     #clock.tick(3)
 
+# Auxiliary function to draw a circle o the node being visited
+def drawCircle_noOffset(point, screen, color = (255,255,255)):
+    (x,y) = point
+    pygame.draw.circle(screen, color,(x,y),5,0)
+    pygame.display.flip()
+    #clock.tick(3)
+
 class State(Enum):
     SEARCHING = 1
     JUMPING = 2
     ADJUST = 3
+    ON_ELEVATOR = 4
     #LADDER = 3
