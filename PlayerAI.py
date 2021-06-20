@@ -38,7 +38,7 @@ class PlayerAI:
 
         elif self.state == State.JUMPING:
             playerPos = screen_to_map((self.player.rect.centerx, self.player.rect.centery))
-            print("state : Jumping ")
+            #print("state : Jumping ")
             if not self.isJumping:
                 self.jump()
                 self.isJumping= True
@@ -49,7 +49,7 @@ class PlayerAI:
                 self.player.update_ia_frame = 10
 
         elif self.state == State.ADJUST:
-            print("state : Adjusting") 
+            #print("state : Adjusting") 
             self.adjust(wallgroup)
 
         elif self.state == State.ON_ELEVATOR:
@@ -90,7 +90,7 @@ class PlayerAI:
             self.player.doClimb = False
             self.player.doElevator = False
             self.player.elevator = None
-            print("jump : " , self.player.jump)
+            #print("jump : " , self.player.jump)
           
     def findGem(self, gemGroup):
         playerPos = (self.player.rect.centerx, self.player.rect.centery)
@@ -441,12 +441,10 @@ class PlayerAI:
                 #   ala  | ala
                 
                 if isGoingUp and ((xPS-80 < xMS < xPS+80 and monsterDirection == 1) or (xPS-80 < xMS < xPS+80 and monsterDirection == -1)) and yM == y:
-                    print("up")
                     self.player.rect.centery = map_to_screen((xP, yP))[1] + 20
                     print(yP, map_to_screen((xP, yP))[1])
                     return False
                 elif ((xPS-60 < xMS < xPS+40 and monsterDirection == 1) or (xPS-40 < xMS < xPS+60 and monsterDirection == -1)) and (yM == y or yM == y+1):
-                    print("down")
                     return False
 
         return True
@@ -533,7 +531,7 @@ class PlayerAI:
                 if self.checkMonstersLadder(playerPos2, nextMove, monstergroup, True):
                     self.player.doClimb = True
                     self.player.climbMove = -1
-                    if self.level != 1 and self.level != 6 and self.level != 3 and self.map[int(y)][int(x)] == 'l':
+                    if self.level != 6 and self.level != 3 and self.map[int(y)][int(x)] == 'l':
                         xM, yM = screen_to_map(playerPos2)
                         xS, yS = map_to_screen((xM, yM))
                         self.player.rect.centerx, self.player.rect.centery = xS + 15, yS
@@ -697,7 +695,6 @@ def calcTileCost(currentTile, point, textmap, screen):
             cost = 40
         else: 
             cost = 999
-        #print (cost)
     return cost 
     
 def onMap(point, textmap):
