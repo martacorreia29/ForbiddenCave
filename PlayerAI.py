@@ -531,7 +531,7 @@ class PlayerAI:
                 if self.checkMonstersLadder(playerPos2, nextMove, monstergroup, True):
                     self.player.doClimb = True
                     self.player.climbMove = -1
-                    if self.level != 6 and self.level != 3 and self.map[int(y)][int(x)] == 'l':
+                    if self.level != 7 and self.level != 4 and self.map[int(y)][int(x)] == 'l':
                         xM, yM = screen_to_map(playerPos2)
                         xS, yS = map_to_screen((xM, yM))
                         self.player.rect.centerx, self.player.rect.centery = xS + 15, yS

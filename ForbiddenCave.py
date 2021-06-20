@@ -1008,9 +1008,9 @@ class ForbiddenCave:
        self.frameCounter = 0 
        
        # Level maps
-       self.maps = [PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
-                    PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "levelTest.txt"] #, PATH_MAPS + "level8.txt" ] 
-       #self.maps = [PATH_MAPS + "level2.txt",]
+       self.maps = [PATH_MAPS + "levelTest.txt", PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
+                    PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt"] 
+       #self.maps = [PATH_MAPS + "level7.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1112,12 +1112,28 @@ class ForbiddenCave:
                 if row == '.' and self.isWall((i, j-1), textmap) and (not self.isFloor((i, j+1), textmap) and not self.isFloor((i, j+2), textmap)):
                     newTextMap[j][i] = 'x'
 
-        if levelcnt == 2:
+        if levelcnt == 1:
+            newTextMap[8][16] = 'x'
+            newTextMap[8][17] = 'x'
+            newTextMap[7][15] = 'x'
+            newTextMap[6][15] = 'x'
+
+        if levelcnt == 3:
             newTextMap[5][9] = 'x'
             newTextMap[4][23] = 'x'
         
-        if levelcnt == 3:
+        if levelcnt == 4:
             newTextMap[7][17] = '.'
+
+        if levelcnt == 7:
+            newTextMap[8][16] = 'x'
+            newTextMap[7][16] = 'x'
+            newTextMap[6][16] = 'x'
+            newTextMap[12][20] = 'x'
+            newTextMap[12][21] = 'x'
+            newTextMap[12][22] = 'x'
+            newTextMap[12][23] = 'x'
+            newTextMap[12][24] = 'x'
 
         i = -1
         j = -1
@@ -1526,7 +1542,7 @@ class ForbiddenCave:
                ### Player AI
                ##################################################
                if not player.ai:
-                    player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, self.levelcnt), self.screen, self.levelcnt)
+                   player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, self.levelcnt), self.screen, self.levelcnt)
                     
 
                self.frameCounter += 1

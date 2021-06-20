@@ -6,11 +6,11 @@ b..laa........aaa........b
 b..l.....................b
 b..l...............m.c...b
 b..laa.ooOoo.aaaa..aaa...b
-b..y.....................b
+b..l.....................b
 b..l....c...........c....b
 b..l...m........c........b
 b..aaaaaaa.oooOooo.aaal..b
 b.....c......c.....c..l..b
-b........c............y..b
+b........c............l..b
 b....f......f......f..l..d
 bbbbbbbbbbbbbbbbbbbbbbbbbb
