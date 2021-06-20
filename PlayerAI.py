@@ -10,7 +10,7 @@ from queue import PriorityQueue
 
 # Contains player AI logic
 class PlayerAI:
-    def __init__(self, player, map, screen):
+    def __init__(self, player, map, screen, level):
         self.player = player
         self.map = map
         self.screen = screen
@@ -20,6 +20,7 @@ class PlayerAI:
         self.onElevator = None
         self.wantedPosition = None
         self.direction = None
+        self.level = level
         
     def random(self):
         action = random.randint(0, 10)
@@ -309,22 +310,22 @@ class PlayerAI:
         for monster in monstergroup:
             jump = False
             # <0 <i
-            if monster.xmove < 0 and monster.rect.centerx < xP and self.player.xmove == -1 and \
+            if monster.xmove < 0 and monster.rect.centerx < xPS and self.player.xmove == -1 and \
             abs(monster.rect.centerx - leftSensor[0]) < 5 and abs(monster.rect.centery - leftSensor[1]) < 5:
                 jump = True
             
             # i 0>
-            if monster.xmove > 0 and monster.rect.centerx > xP and self.player.xmove == 1 and \
+            if monster.xmove > 0 and monster.rect.centerx > xPS and self.player.xmove == 1 and \
             abs(monster.rect.centerx - rightSensor[0]) < 5 and abs(monster.rect.centery - rightSensor[1]) < 5:
                 jump = True
 
             # i <0 
-            if monster.xmove < 0 and monster.rect.centerx > xP and self.player.xmove == 1 and \
+            if monster.xmove < 0 and monster.rect.centerx > xPS and self.player.xmove == 1 and \
             abs(monster.rect.centerx - rightSensor[0]) < 40 and abs(monster.rect.centery - rightSensor[1]) < 5:
                 jump = True            
 
             # 0> i
-            if monster.xmove > 0 and monster.rect.centerx < xP and self.player.xmove == -1 and \
+            if monster.xmove > 0 and monster.rect.centerx < xPS and self.player.xmove == -1 and \
             abs(monster.rect.centerx - leftSensor[0]) < 40 and abs(monster.rect.centery - leftSensor[1]) < 5:
                 jump = True
 
@@ -338,9 +339,11 @@ class PlayerAI:
                     self.player.xmove == 0
                     return True
             else:
-                xFS, yFS = xP-100, yP+40
+                xFS, yFS = xPS-100, yPS+40
+                drawCircle((xFS,yFS), self.screen, (0,0,255))
                 xF, yF = screen_to_map((xFS, yFS)) 
                 if jump and onMap((xF, yF), self.map) and not self.isFloor((xF,yF)):
+                    print("do you have floor???")
                     self.player.rect.centerx, self.player.rect.centery = xPS + 20, yPS
                     self.player.xmove == 0
                     return True
@@ -497,7 +500,7 @@ class PlayerAI:
             if self.player.canClimb:
                 self.player.doClimb = True
                 self.player.climbMove = -1
-                if self.map[int(y)][int(x)] == 'l':
+                if self.level != 1 and self.map[int(y)][int(x)] == 'l':
                     xM, yM = screen_to_map(playerPos2)
                     xS, yS = map_to_screen((xM, yM))
                     self.player.rect.centerx, self.player.rect.centery = xS + 15, yS

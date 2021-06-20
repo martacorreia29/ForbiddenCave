@@ -1,7 +1,7 @@
 bbbbbbbbbbbbbbbbbbbbbbbbbb
 b........................b
-b.........vvvvvVvvvv.....b
-b.......m.....c....c.....b
+b........................b
+b.........m...c....c.....b
 bc...oaaaaa..aaa..aaaa...b
 bal..o...................b
 b.l..O...................b
@@ -11,6 +11,6 @@ b.lc..................l..b
 b.aaa.................l..b
 b.........f...aaooOooaa..b
 b........aaaa............b
-b..laaaa......vvvvVvvvv..b
+b..laaaa.................b
 b..l...........f....f....d
 bbbbbbbbbbbbbbbbbbbbbbbbbb
