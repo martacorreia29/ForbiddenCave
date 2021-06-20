@@ -1010,7 +1010,7 @@ class ForbiddenCave:
        # Level maps
        #self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                     #PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       self.maps = [PATH_MAPS + "level5.txt"]
+       self.maps = [PATH_MAPS + "level3.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1514,7 +1514,7 @@ class ForbiddenCave:
                ### Player AI
                ##################################################
                if not player.ai:
-                    player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, self.levelcnt), self.screen, 2)#self.levelcnt)
+                    player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, self.levelcnt), self.screen, self.levelcnt)
                     
 
                self.frameCounter += 1
