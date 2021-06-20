@@ -1,11 +1,11 @@
 bbbbbbbbbbbbbbbbbbbbbbbbbb
 b........c.....c......c..b
 b........................b
-b.....aaaaaaa.....aaaaa..b
+b....faaaaaaa....aaaaaa..b
 b..laa........aaa........b
 b..l.....................b
-b..l................mc...b
-b..laa.ooOoo.aaaa..aaaa..b
+b..l...............m.c...b
+b..laa.ooOoo.aaaa..aaa...b
 b..y.....................b
 b..l....c...........c....b
 b..l...m........c........b

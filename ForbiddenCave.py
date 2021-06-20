@@ -1010,7 +1010,8 @@ class ForbiddenCave:
        # Level maps
        #self.maps = [ PATH_MAPS + "level1.txt", PATH_MAPS + "level2.txt", PATH_MAPS + "level3.txt", PATH_MAPS + "level4.txt", \
                     #PATH_MAPS + "level5.txt", PATH_MAPS + "level6.txt", PATH_MAPS + "level7.txt", PATH_MAPS + "level8.txt" ] 
-       self.maps = [PATH_MAPS + "level6.txt"]
+       self.maps = [PATH_MAPS + "levelTest.txt",]
+       #self.maps = [PATH_MAPS + "level3.txt"]
 
        # Sounds
        self.gemSound = self.loadSound(PATH_SOUND + "gem.wav")    
@@ -1095,30 +1096,42 @@ class ForbiddenCave:
                self.doGameOverLoop()
 
    def addXs(self, textmap, levelcnt):
-       newTextMap = [[0]*len(textmap[0]) for i in range(len(textmap))]
-       i = -1
-       j = -1
-       for column in textmap:
-        j += 1
+        newTextMap = [[0]*len(textmap[0]) for i in range(len(textmap))]
         i = -1
-        for row in column:
-            i += 1
-            newTextMap[j][i] = textmap[j][i]
+        j = -1
+        for column in textmap:
+            j += 1
+            i = -1
+            for row in column:
+                i += 1
+                newTextMap[j][i] = textmap[j][i]
 
-            if row == '.' and (self.isWall((i+1, j), textmap) or self.isWall((i-1, j), textmap)) and (not self.isFloor((i, j+1), textmap) and not self.isFloor((i, j+2), textmap)):
-                newTextMap[j][i] = 'x'
-                PlayerAI.drawCircle(PlayerAI.map_to_screen((i, j)), self.screen, color = (255,0,0))
+                if row == '.' and (self.isWall((i+1, j), textmap) or self.isWall((i-1, j), textmap)) and (not self.isFloor((i, j+1), textmap) and not self.isFloor((i, j+2), textmap)):
+                    newTextMap[j][i] = 'x'
+                    
 
-            if row == '.' and (self.isWall((i, j-1), textmap) or self.isWall((i, j-1), textmap)) and (not self.isFloor((i, j+1), textmap) and not self.isFloor((i, j+2), textmap)):
-                newTextMap[j][i] = 'x'
-                PlayerAI.drawCircle(PlayerAI.map_to_screen((i, j)), self.screen, color = (255,0,0))
+                if row == '.' and self.isWall((i, j-1), textmap) and (not self.isFloor((i, j+1), textmap) and not self.isFloor((i, j+2), textmap)):
+                    newTextMap[j][i] = 'x'
 
-        if levelcnt == 3:
-            newTextMap[9][5] = 'x'
+        if levelcnt == 2:
+            newTextMap[5][9] = 'x'
             newTextMap[4][23] = 'x'
-            PlayerAI.drawCircle(PlayerAI.map_to_screen((5, 9)), self.screen, color = (255,0,0))
+        
+        if levelcnt == 3:
+            newTextMap[7][17] = '.'
+
+        i = -1
+        j = -1
+        for column in textmap:
+            j += 1
+            i = -1
+            for row in column:
+                i += 1
+                if newTextMap[j][i] == 'x':
+                    PlayerAI.drawCircle(PlayerAI.map_to_screen((i, j)), self.screen, color = (255,0,0))
+
        
-       return newTextMap
+        return newTextMap
 
    def isWall(self, point, textmap):
         x, y = point
@@ -1514,6 +1527,7 @@ class ForbiddenCave:
                ### Player AI
                ##################################################
                if not player.ai:
+                    self.levelcnt = 7
                     player.ai = PlayerAI.PlayerAI(player, self.addXs(self.map.textmap, self.levelcnt), self.screen, self.levelcnt)
                     
 
