@@ -1,3 +1,5 @@
+__author__ = "GRUPO 5: Diogo Soares, Marta Correia, Miguel Tavares"
+
 from typing import TYPE_CHECKING
 import pygame
 import random
@@ -22,13 +24,7 @@ class PlayerAI:
         self.direction = None
         self.level = level
         
-    def random(self):
-        action = random.randint(0, 10)
-        if(action > 8):
-            player.jump = random.randint(-5, 5)
-        else:
-            player.xmove = random.randint(-1, 1)
-
+    # determines behaviour based on state
     def updateBehaviour(self,gemGroup,doorGroup,firegroup, wallgroup, monstergroup, elevatorgroup):
         if self.state == State.SEARCHING:
             if(len(gemGroup) < 1):
@@ -37,8 +33,6 @@ class PlayerAI:
                 return  self.iaMoving(self.findGem(gemGroup),firegroup, monstergroup, elevatorgroup)
 
         elif self.state == State.JUMPING:
-            playerPos = screen_to_map((self.player.rect.centerx, self.player.rect.centery))
-            #print("state : Jumping ")
             if not self.isJumping:
                 self.jump()
                 self.isJumping= True
@@ -49,7 +43,6 @@ class PlayerAI:
                 self.player.update_ia_frame = 10
 
         elif self.state == State.ADJUST:
-            #print("state : Adjusting") 
             self.adjust(wallgroup)
 
         elif self.state == State.ON_ELEVATOR:
@@ -84,13 +77,11 @@ class PlayerAI:
 
     def jump(self):
         if (self.player.jump == 0 and self.player.ymove == 0) or self.player.doElevator == True:
-            #TODO self.player.jumpSound.play()
             self.player.jump = -5.2
             self.player.climbMove = 0
             self.player.doClimb = False
             self.player.doElevator = False
             self.player.elevator = None
-            #print("jump : " , self.player.jump)
           
     def findGem(self, gemGroup):
         playerPos = (self.player.rect.centerx, self.player.rect.centery)
@@ -200,12 +191,6 @@ class PlayerAI:
                 elif goingRight and abs(elPSx - xS) > 20:
                     return False
 
-                # drawCircle_noOffset((elPSx+40, elPSy), self.screen, (0,0,255))
-                # drawCircle_noOffset((elPSx+80, elPSy), self.screen, (0,0,255))
-                # drawCircle_noOffset((elPSx, elPSy-40), self.screen, (0,255,0))
-                # drawCircle_noOffset((elPSx, elPSy+40), self.screen, (0,255,0))
-
-
                 for elevator in elevatorgroup:
                     elx, ely = elevator.rect.center
                     elevatorGoingRight = elevator.xmove > 0
@@ -215,7 +200,6 @@ class PlayerAI:
                     canGo = not elevatorGoingRight and goingRight or elevatorGoingRight and not goingRight
 
                     if inBordingZone and canGo:
-                        #self.player.rect = self.player.rect.move(-40, 0)
                         self.jump()
                         self.state = State.ON_ELEVATOR
                         self.onElevator = elevator
@@ -251,6 +235,7 @@ class PlayerAI:
                 self.player.xmove = 0     
                 return False
 
+            # code not used: initial implementation of vertical elevators
             elif foundVerticalElevator and playerOnFloor:
                 #TODO: Test and fix
                 # Elevator path start
@@ -442,7 +427,6 @@ class PlayerAI:
                 
                 if isGoingUp and ((xPS-80 < xMS < xPS+80 and monsterDirection == 1) or (xPS-80 < xMS < xPS+80 and monsterDirection == -1)) and yM == y:
                     self.player.rect.centery = map_to_screen((xP, yP))[1] + 20
-                    print(yP, map_to_screen((xP, yP))[1])
                     return False
                 elif ((xPS-60 < xMS < xPS+40 and monsterDirection == 1) or (xPS-40 < xMS < xPS+60 and monsterDirection == -1)) and (yM == y or yM == y+1):
                     return False
