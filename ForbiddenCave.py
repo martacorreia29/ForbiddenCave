@@ -421,46 +421,19 @@ class Player(AnimatedSprite):
         # Player AI
         self.ai = None
 
-
-        #TODO: remove if not needed
         # sensors 
         self.sensorImg = PATH_IMAGES + "point.png" 
         self.leftSensor = None
         self.rightSensor = None
-        self.downLeftSensor = None
-        self.downRightSensor = None
-        # self.leftLongDistanceSensor = None
-        # self.rightLongDistanceSensor = None
-        # self.topLeftSensor = None
-        # self.topRightSensor = None
 
            
     def refresh_sensors(self, screen, display):
         self.leftSensor = (self.rect.centerx - 40 , self.rect.centery)
         self.rightSensor = (self.rect.centerx  + 40 , self.rect.centery)
-        self.downLeftSensor = (self.rect.centerx - self.rect.width , self.rect.centery + self.rect.height -10)
-        self.downRightSensor = (self.rect.centerx + self.rect.width , self.rect.centery + self.rect.height -10)
-    #     #self.leftLongDistanceSensor = (self.rect.centerx - self.rect.width * 2, self.rect.centery)
-    #     #self.rightLongDistanceSensor = (self.rect.centerx  + self.rect.width * 2 , self.rect.centery)
-    #     self.topLeftSensor = (self.rect.centerx - self.rect.width , self.rect.centery - self.rect.height)
-    #     self.topRightSensor = (self.rect.centerx + self.rect.width , self.rect.centery - self.rect.height)
-
-    #     # print("Player: x: ", self.rect.x, "y: ", self.rect.y)
-    #     # print("leftSensor: x: ", self.leftSensor[0], "y: ", self.leftSensor[1])
-    #     # print("rightSensor: x: " , self.rightSensor[0], "y: ", self.rightSensor[1])
-    #     # print("downLeftSensor:  x: " , self.downLeftSensor[0], "y: ", self.downLeftSensor[1])
-    #     # print("downRightSensor:  x: " , self.downRightSensor[0], "y: ", self.downRightSensor[1])
-    #     # print("\n")
 
         if display:
             screen.blit(pygame.image.load(self.sensorImg), self.leftSensor)
             screen.blit(pygame.image.load(self.sensorImg), self.rightSensor)
-            screen.blit(pygame.image.load(self.sensorImg), self.downLeftSensor)
-            screen.blit(pygame.image.load(self.sensorImg), self.downRightSensor)
-    #             #screen.blit(pygame.image.load(self.sensorImg), self.leftLongDistanceSensor)
-    #             #screen.blit(pygame.image.load(self.sensorImg), self.rightLongDistanceSensor)
-    #             screen.blit(pygame.image.load(self.sensorImg), self.topLeftSensor)
-    #             screen.blit(pygame.image.load(self.sensorImg), self.topRightSensor)
 
     # print( player's state
     def printState(self):
@@ -1342,7 +1315,7 @@ class ForbiddenCave:
            self.startSound.play()
            initialPos = (40, 600)
            #initialPos = PlayerAI.map_to_screen((23,14))
-           player = Player(initialPos[0], initialPos[1], PATH_IMAGES + "playerLeft2.png", PATH_IMAGES + "playerRight2.png", PATH_IMAGES + "playerClimb.png", PATH_IMAGES + "scull.png", \
+           player = Player(initialPos[0], initialPos[1], PATH_IMAGES + "playerLeft.png", PATH_IMAGES + "playerRight.png", PATH_IMAGES + "playerClimb.png", PATH_IMAGES + "scull.png", \
                            self.background, self.map)
            
            playergroup = pygame.sprite.RenderPlain()

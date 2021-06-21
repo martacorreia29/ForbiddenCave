@@ -379,7 +379,7 @@ class PlayerAI:
         return True
 
     # verifies if is the end of platform and goes through path to see if path leads to another 
-    # platform at the same level so it can jump      
+    # platform so it can jump      
     def checkJumpBetweenPlataforms(self, playerPos, nextMove, path, index, monstergroup):
         x, y = screen_to_map(nextMove)
         xP, yP = screen_to_map(playerPos)      
@@ -662,9 +662,6 @@ def calcTileCost(currentTile, point, textmap, screen):
         for i in range(3):
             if onMap((x,y+i+1) , textmap):
                 temp = textmap[y+i+1][x] == 'a' or textmap[y+i+1][x] == 'b' or textmap[y+i+1][x] == 'l'
-                '''if cy > y:
-                    print("x")
-                    temp = temp or textmap[y+i+1][x] == 'x'''
                 hasFloor = hasFloor or temp
             
         hasPlatform = False
@@ -808,5 +805,3 @@ class State(Enum):
     JUMPING = 2
     ADJUST = 3
     ON_ELEVATOR = 4
-    DELAY_BEFORE_JUMP = 5
-    #LADDER = 3
